@@ -114,20 +114,14 @@ mod tests {
     fn unknwon_command() {
         let args: &[&str] = &["42"];
         let res = Command::try_from(args);
-        assert_eq!(
-            res,
-            Err(ParsingError::UnknownCommand(args[0].into()))
-        );
+        assert_eq!(res, Err(ParsingError::UnknownCommand(args[0].into())));
     }
 
     #[test]
     fn typo() {
         let args: &[&str] = &["addd"];
         let res = Command::try_from(args);
-        assert_eq!(
-            res,
-            Err(ParsingError::UnknownCommand(args[0].into()))
-        );
+        assert_eq!(res, Err(ParsingError::UnknownCommand(args[0].into())));
     }
 
     #[test]
