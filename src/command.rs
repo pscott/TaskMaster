@@ -99,6 +99,7 @@ impl<'a> std::convert::TryFrom<&'a [&'a str]> for Command<'a> {
 }
 
 #[cfg(test)]
+#[allow(clippy::shadow_unrelated)] // We don't mind shadowing here, so stop Clippy from complaining.
 mod tests {
     use super::*;
     use std::convert::TryFrom;
