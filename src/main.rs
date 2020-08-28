@@ -19,8 +19,10 @@ enum Command<'a> {
     PID(&'a [&'a str]),
     /// Removes process/group from active config.
     Remove(&'a [&'a str]),
+    /// Reload the daemon’s configuration files, without add/remove (no restarts).
+    ReRead,
     /// Restart multiple processes or groups.
-    /// Note: restart does not reread config files. For that, see reread and update.
+    /// Note: restart does not reread config files. For that, see `Reread` and `Update`.
     Restart(&'a [&'a str]),
     /// Start one or multiple processes/groups.
     Start(&'a [&'a str]),
@@ -98,6 +100,7 @@ impl<'a> std::convert::TryFrom<&'a [&'a str]> for Command<'a> {
                 "exit" => create_command!(data, Exit, zero_arg),
                 "pid" => create_command!(data, PID, multiple_args),
                 "remove" => create_command!(data, Remove, multiple_args),
+                "reread" => create_command!(data, ReRead, zero_arg),
                 "restart" => create_command!(data, Restart, multiple_args),
                 "start" => create_command!(data, Start, multiple_args),
                 "status" => create_command!(data, Status, one_arg),
