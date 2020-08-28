@@ -1,4 +1,3 @@
-extern crate liner;
 mod command;
 mod config;
 
