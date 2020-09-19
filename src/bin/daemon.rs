@@ -10,8 +10,8 @@ fn main() {
         .chown_pid_file(false) // is optional, see `Daemonize` documentation
         .working_directory("/tmp") // for default behaviour.
         .user("scott")
-        // .group("daemon") // Group name
-        // .group(2) // or group id.
+        .group("daemon") // Group name
+        .group(2) // or group id.
         .umask(0o777) // Set umask, `0o027` by default.
         .stdout(stdout) // Redirect stdout to `/tmp/daemon.out`.
         .stderr(stderr) // Redirect stderr to `/tmp/daemon.err`.
