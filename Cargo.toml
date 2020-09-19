@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 redox_liner = "0.5.1"
+daemonize = "0.4.1"
