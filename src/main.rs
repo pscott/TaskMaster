@@ -1,11 +1,11 @@
+mod command;
+mod config;
+
+use command::Command;
+use config::Config;
 use liner::{Completer, Context};
 use std::convert::TryFrom;
 use std::path::Path;
-use taskmaster::command::Command;
-use taskmaster::config::Config;
-
-/// Displayed prompt when using the client in interactive mode.
-const PROMPT: &str = "taskmaster> ";
 
 /// Placeholder struct for Completer.
 struct EmptyCompleter;
@@ -23,7 +23,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut con = Context::new();
 
     loop {
-        let line = con.read_line(PROMPT, None, &mut EmptyCompleter)?;
+        let line = con.read_line("$ ", None, &mut EmptyCompleter)?;
 
         let args = line.split_ascii_whitespace().collect::<Vec<&str>>();
         let cmd = Command::try_from(&args[..]);
