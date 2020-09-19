@@ -1,11 +1,8 @@
-mod command;
-mod config;
-
-use command::Command;
-use config::Config;
 use liner::{Completer, Context};
 use std::convert::TryFrom;
 use std::path::Path;
+use taskmaster::command::Command;
+use taskmaster::config::Config;
 
 /// Placeholder struct for Completer.
 struct EmptyCompleter;
