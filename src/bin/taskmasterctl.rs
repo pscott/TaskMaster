@@ -1,8 +1,6 @@
 use liner::{Completer, Context};
-use std::convert::TryFrom;
-use std::net::TcpStream;
-use taskmaster::command::Command;
-use taskmaster::DEFAULT_ADDR;
+use std::{convert::TryFrom, net::TcpStream};
+use taskmaster::{command::Command, DEFAULT_ADDR};
 
 /// Prompt displayed when using taskmaster in interactive mode.
 const TASKMASTER_PROMPT: &str = "taskmaster> ";

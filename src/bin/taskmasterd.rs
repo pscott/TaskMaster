@@ -1,10 +1,10 @@
 use serde_json::Deserializer;
-use std::convert::TryFrom;
-use std::net::{TcpListener, TcpStream};
-use std::path::Path;
-use taskmaster::command::Command;
-use taskmaster::config::Config;
-use taskmaster::DEFAULT_ADDR;
+use std::{
+    convert::TryFrom,
+    net::{TcpListener, TcpStream},
+    path::Path,
+};
+use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
     let path = Path::new("config.yaml");
@@ -22,9 +22,9 @@ fn main() -> Result<(), std::io::Error> {
 }
 
 fn handle_connection(stream: TcpStream) {
-    let objects = Deserializer::from_reader(stream).into_iter::<Command>();
+    let commands = Deserializer::from_reader(stream).into_iter::<Command>();
 
-    for obj in objects {
-        println!("{:?}", obj);
+    for cmd in commands {
+        println!("{:?}", cmd);
     }
 }

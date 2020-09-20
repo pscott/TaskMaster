@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 pub enum Command {
     /// Activates any updates in config for process/group.
     Add(Vec<String>),
-    /// Clear one or multiple process’ log files
+    /// Clear one or multiple process’ log files.
     Clear(Vec<String>),
-    /// Exit TaskMaster.
+    /// Exit taskmasterctl.
     Exit,
     /// Get the PID of one or multiple child processes.
     PID(Vec<String>),
