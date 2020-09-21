@@ -33,7 +33,7 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
 
         // Answer back to client with command's status.
         stream
-            .write_all("Your program is running ok.".as_bytes())
+            .write_all(b"Your program is running ok.")
             .map_err(|e| e.to_string())?;
     } else {
         eprintln!("Could not read from stream.");
