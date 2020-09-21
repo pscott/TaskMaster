@@ -25,13 +25,16 @@ fn main() -> Result<(), std::io::Error> {
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
     let mut buf = [0; 1024];
+
     if let Ok(bytes) = stream.read(&mut buf) {
         let _cmd: Command = serde_json::from_str(&String::from_utf8_lossy(&buf[..bytes]))
             .map_err(|e| e.to_string())?;
+        // Execute the command here.
+
+        // Answer back to client with command's status.
         stream
             .write_all("Your program is running ok.".as_bytes())
             .map_err(|e| e.to_string())?;
-        println!("Returned success.");
     } else {
         eprintln!("Could not read from stream.");
     }
