@@ -1,4 +1,4 @@
-use serde_json::Deserializer;
+use std::io::{Read, Write};
 use std::{
     convert::TryFrom,
     net::{TcpListener, TcpStream},
@@ -13,7 +13,9 @@ fn main() -> Result<(), std::io::Error> {
 
     for stream in listener.incoming() {
         match stream {
-            Ok(tcp_stream) => handle_connection(tcp_stream),
+            Ok(tcp_stream) => {
+                println!("{:?}", handle_connection(tcp_stream));
+            }
             Err(e) => eprintln!("Error: {}", e),
         }
     }
@@ -21,10 +23,17 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn handle_connection(stream: TcpStream) {
-    let commands = Deserializer::from_reader(stream).into_iter::<Command>();
-
-    for cmd in commands {
-        println!("{:?}", cmd);
+fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
+    let mut buf = [0; 1024];
+    if let Ok(bytes) = stream.read(&mut buf) {
+        let _cmd: Command = serde_json::from_str(&String::from_utf8_lossy(&buf[..bytes]))
+            .map_err(|e| e.to_string())?;
+        stream
+            .write_all("Your program is running ok.".as_bytes())
+            .map_err(|e| e.to_string())?;
+        println!("Returned success.");
+    } else {
+        eprintln!("Could not read from stream.");
     }
+    Ok(())
 }

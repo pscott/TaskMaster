@@ -1,4 +1,5 @@
 use liner::{Completer, Context};
+use std::io::{Read, Write};
 use std::{convert::TryFrom, net::TcpStream};
 use taskmaster::{command::Command, DEFAULT_ADDR};
 
@@ -15,10 +16,6 @@ impl Completer for EmptyCompleter {
 }
 fn main() -> Result<(), String> {
     let mut con = Context::new();
-    let stream = TcpStream::connect(DEFAULT_ADDR).map_err(|_| {
-        "Could not connect to the daemon. You can start the daemon by typing `taskmasterd`"
-            .to_string()
-    })?;
 
     loop {
         let line = con
@@ -30,12 +27,24 @@ fn main() -> Result<(), String> {
         match cmd {
             Ok(Command::Exit) => break,
             Ok(command) => {
-                serde_json::to_writer(&stream, &command).map_err(|e| e.to_string())?;
+                let mut stream = TcpStream::connect(DEFAULT_ADDR).map_err(|_| {
+        "Could not connect to the daemon. You can start the daemon by typing `taskmasterd`"
+            .to_string()
+    })?;
+                if let Err(e) = stream.write(serde_json::to_string(&command).unwrap().as_bytes()) {
+                    eprintln!("{}", e.to_string());
+                } else {
+                    let mut res = String::new();
+                    stream.read_to_string(&mut res).map_err(|e| e.to_string())?;
+                    println!("response: {}", res);
+                }
             }
             Err(cmd_err) => cmd_err.display(),
         }
 
-        con.history.push(line.into()).map_err(|e| e.to_string())?;
+        con.history
+            .push(line.into())
+            .unwrap_or_else(|e| eprintln!("Failed to write to history: {}", e.to_string()));
     }
     Ok(())
 }
