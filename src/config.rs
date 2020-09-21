@@ -1,9 +1,19 @@
-use std::{process, path::{Path, PathBuf}};
-use signal::Signal;
-use std::fs::File;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::HashMap,
+    fs::File,
+    path::{Path, PathBuf},
+    process,
+};
 
-use serde::{Serialize, Deserialize};
+/// Restart conditions for a service.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+enum Restart {
+    Never,
+    Always,
+    Unexpected,
+}
 
 /// Configuration structure used to run a task.
 #[derive(Serialize, Deserialize, Debug)]
@@ -20,15 +30,25 @@ pub struct Config {
     umask: i32,
     /// Working directory of the task.
     workingdir: PathBuf,
+    /// Service starting at load time.
     autostart: bool,
-    autorestart: String,
+    /// Service restarting when finished.
+    autorestart: Restart,
+    /// Autorestart callback trigger value.
     exitcodes: Vec<i32>,
+    /// Restart attempts.
     startretries: i32,
+    /// Delay before start.
     starttime: i32,
+    /// Signal received by supervisord trigger service termination.
     stopsignal: String,
+    /// Running period.
     stoptime: i32,
+    /// Stdout logfile path.
     stdout: PathBuf,
+    /// Stderr logfile path.
     stderr: PathBuf,
+    /// Environment variable service is running into.
     env: HashMap<String, String>,
 }
 
@@ -38,7 +58,10 @@ impl Default for Config {
         let home = {
             match dirs::home_dir() {
                 Some(dir) => dir,
-                None => { eprintln!("Impossible to get user home directory!"); process::exit(1) }
+                None => {
+                    eprintln!("Impossible to get user home directory!");
+                    process::exit(1)
+                }
             }
         };
         Self {
@@ -47,35 +70,30 @@ impl Default for Config {
             umask: 0o027,
             workingdir: home.clone(),
             autostart: true,
-            autorestart: "never".to_string(),
-            exitcodes: { let mut v = Vec::new(); v.push(0); v },
+            autorestart: Restart::Never,
+            exitcodes: {
+                let mut v = Vec::new();
+                v.push(0);
+                v
+            },
             startretries: 0,
             starttime: 0,
-         //   stopsignal: Signal::SIGTERM,
             stopsignal: "SIGTERM".to_string(),
             stoptime: 0,
-            stdout: home.join(bin.to_string() + ".stdout"), // Would be lovely to replace "bin" by cmd from the struct Self
+            stdout: home.join(bin.to_string() + ".stdout"), // Would be lovely to replace "bin" by "cmd" from the struct itself
             stderr: home.join(bin.to_string() + ".stderr"), // Same
             env: HashMap::new(),
         }
     }
 }
 
-impl std::convert::TryFrom<&Path> for Config {
-    type Error = std::io::Error;
-
-    fn try_from(file_name: &Path) -> Result<Self, Self::Error> {
-    // TODO: deserialize from yaml file
-        let file = File::open(&file_name).expect("Unable to open");
-
-        let d: Config = serde_yaml::from_reader(file).unwrap();
-
-        println!("{:?}", d);
-
-        Ok(Self::default())
-    }
+pub fn parse_config(
+    file_name: &Path,
+) -> Result<HashMap<String, HashMap<String, Config>>, serde_yaml::Error> {
+    let file = File::open(&file_name).expect("Unable to open config file");
+    let d: HashMap<String, HashMap<String, Config>> = serde_yaml::from_reader(file)?;
+    Ok(d)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -93,7 +111,10 @@ mod tests {
 
     #[test]
     fn prg_default_values() {
-        let conf = Config { cmd: "nginx".to_string(), ..Default::default() };
+        let conf = Config {
+            cmd: "nginx".to_string(),
+            ..Default::default()
+        };
         assert_eq!(conf.cmd, "nginx");
         assert_eq!(conf.exitcodes[0], 0);
         assert_eq!(conf.workingdir, dirs::home_dir().unwrap());
