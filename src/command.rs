@@ -1,29 +1,30 @@
-#[derive(Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 /// Command that will be executed.
-pub enum Command<'a> {
+pub enum Command {
     /// Activates any updates in config for process/group.
-    Add(&'a [&'a str]),
-    /// Clear one or multiple process’ log files
-    Clear(&'a [&'a str]),
-    /// Exit TaskMaster.
+    Add(Vec<String>),
+    /// Clear one or multiple process’ log files.
+    Clear(Vec<String>),
+    /// Exit taskmasterctl.
     Exit,
     /// Get the PID of one or multiple child processes.
-    PID(&'a [&'a str]),
+    PID(Vec<String>),
     /// Removes process/group from active config.
-    Remove(&'a [&'a str]),
+    Remove(Vec<String>),
     /// Reload the daemon’s configuration files, without add/remove (no restarts).
     ReRead,
     /// Restart multiple processes or groups.
     /// Note: restart does not reread config files. For that, see `Reread` and `Update`.
-    Restart(&'a [&'a str]),
+    Restart(Vec<String>),
     /// Start one or multiple processes/groups.
-    Start(&'a [&'a str]),
+    Start(Vec<String>),
     /// Get status on one or multiple named processes.
-    Status(&'a [&'a str]),
+    Status(Vec<String>),
     /// Stop one or multiple processes or groups.
-    Stop(&'a [&'a str]),
+    Stop(Vec<String>),
     /// Reload config and add/remove as necessary, and will restart affected programs.
-    Update(&'a [&'a str]),
+    Update(Vec<String>),
 }
 
 #[derive(Debug, PartialEq)]
@@ -64,20 +65,30 @@ macro_rules! create_command {
     };
     ($args:ident, $name:ident, multiple_args) => {
         if $args.len() > 1 {
-            Ok(Command::$name(&$args[1..]))
+            Ok(Command::$name(
+                $args[1..]
+                    .iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>(),
+            ))
         } else {
             Err(ParsingError::MissingArguments)
         }
     };
     ($args:ident, $name:ident, unspecified) => {
-        Ok(Command::$name(&$args[1..]))
+        Ok(Command::$name(
+            $args[1..]
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>(),
+        ))
     };
 }
 
-impl<'a> std::convert::TryFrom<&'a [&'a str]> for Command<'a> {
+impl<'a> std::convert::TryFrom<&[&str]> for Command {
     type Error = ParsingError;
 
-    fn try_from(args: &'a [&'a str]) -> Result<Self, Self::Error> {
+    fn try_from(args: &[&str]) -> Result<Self, Self::Error> {
         match args.get(0) {
             None => Err(Self::Error::EmptyCommand),
             Some(&command) => match command {
