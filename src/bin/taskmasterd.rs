@@ -1,13 +1,13 @@
+use daemonize::Daemonize;
 use std::{
-    io::{Read, Write},
     convert::TryFrom,
+    fs::File,
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
-    fs::File,
-    process
+    process,
 };
 use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
-use daemonize::Daemonize;
 use users::{get_current_gid, get_current_uid};
 
 fn daemonize(home: &PathBuf) {
