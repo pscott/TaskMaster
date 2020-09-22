@@ -121,4 +121,15 @@ mod tests {
         assert_ne!(conf.stdout, dirs::home_dir().unwrap().join("ls.stdout"));
         assert_ne!(conf.stderr, dirs::home_dir().unwrap().join("ls.stderr"));
     }
+
+    #[test]
+    fn config_files() {
+        assert!(parse_config(Path::new("tests/config.yaml")).is_ok());
+        assert!(parse_config(Path::new("tests/empty_section.yaml")).is_err());
+        assert!(parse_config(Path::new("tests/empty.yaml")).is_err());
+        assert!(parse_config(Path::new("tests/lot_sections.yaml")).is_ok());
+        assert!(parse_config(Path::new("tests/no_vec.yaml")).is_err());
+        assert!(parse_config(Path::new("tests/num_section.yaml")).is_ok());
+        assert!(parse_config(Path::new("tests/unknow_section.yaml")).is_err());
+    }
 }
