@@ -16,22 +16,18 @@ impl Completer for EmptyCompleter {
 
 fn main() -> Result<(), std::io::Error> {
     let path = Path::new("config.yaml");
-    let _config = {
-        match config::parse_config(path) {
-            #[cfg(debug_assertions)]
-            Ok(config) => {
-                println!("{:?}", config);
-                config
-            }
-            #[cfg(not(debug_assertions))]
-            Ok(config) => config,
-            _ => {
-                println!(
-                    "Parsing error! Configuration file does not respect taskmasterctl/yaml format."
-                );
-                process::exit(1)
-            }
-        }
+    let config = config::parse(path);
+    #[cfg(debug_assertions)]
+    if let Ok(config) = config {
+        println!("{:?}", config);
+    } else {
+        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
+        process::exit(1);
+    };
+    #[cfg(not(debug_assertions))]
+    if let Ok(config) = config { } else {
+        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
+        process::exit(1);
     };
 
     let mut con = Context::new();

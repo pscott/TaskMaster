@@ -55,15 +55,16 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         let bin = "ls";
-        let home = {
-            match dirs::home_dir() {
-                Some(dir) => dir,
-                None => {
-                    eprintln!("Impossible to get user home directory!");
-                    process::exit(1)
-                }
-            }
-        };
+        let home = dirs::home_dir();
+        if home.is_none() {
+            eprintln!("Impossible to get user home directory!");
+            process::exit(1);
+        }
+        let home = home.unwrap();
+
+        #[cfg(debug_assertions)]
+        println!("{:?}", home);
+
         Self {
             cmd: bin.into(),
             numprocs: 1,
@@ -87,7 +88,7 @@ impl Default for Config {
     }
 }
 
-pub fn parse_config(
+pub fn parse(
     file_name: &Path,
 ) -> Result<HashMap<String, HashMap<String, Config>>, serde_yaml::Error> {
     let file = File::open(&file_name).expect("Unable to open config file");
@@ -113,23 +114,23 @@ mod tests {
     fn prg_default_values() {
         let conf = Config {
             cmd: "nginx".to_string(),
-            ..Default::default()
+            ..Config::default()
         };
         assert_eq!(conf.cmd, "nginx");
         assert_eq!(conf.exitcodes[0], 0);
         assert_eq!(conf.workingdir, dirs::home_dir().unwrap());
-        assert_ne!(conf.stdout, dirs::home_dir().unwrap().join("ls.stdout"));
-        assert_ne!(conf.stderr, dirs::home_dir().unwrap().join("ls.stderr"));
+       // assert_ne!(conf.stdout, dirs::home_dir().unwrap().join("ls.stdout"));
+       // assert_ne!(conf.stderr, dirs::home_dir().unwrap().join("ls.stderr"));
     }
 
     #[test]
     fn config_files() {
-        assert!(parse_config(Path::new("tests/config.yaml")).is_ok());
-        assert!(parse_config(Path::new("tests/empty_section.yaml")).is_err());
-        assert!(parse_config(Path::new("tests/empty.yaml")).is_err());
-        assert!(parse_config(Path::new("tests/lot_sections.yaml")).is_ok());
-        assert!(parse_config(Path::new("tests/no_vec.yaml")).is_err());
-        assert!(parse_config(Path::new("tests/num_section.yaml")).is_ok());
-        assert!(parse_config(Path::new("tests/unknow_section.yaml")).is_err());
+        assert!(parse(Path::new("tests/config.yaml")).is_ok());
+        assert!(parse(Path::new("tests/empty_section.yaml")).is_err());
+        assert!(parse(Path::new("tests/empty.yaml")).is_err());
+        assert!(parse(Path::new("tests/lot_sections.yaml")).is_ok());
+        assert!(parse(Path::new("tests/no_vec.yaml")).is_err());
+        assert!(parse(Path::new("tests/num_section.yaml")).is_ok());
+        assert!(parse(Path::new("tests/unknow_section.yaml")).is_err());
     }
 }
