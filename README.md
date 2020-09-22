@@ -6,14 +6,12 @@
   </a>
 
   <p align="center">
-    <img src="assets/title.png" alt="TaskMaster" width="280" height="70">
+    <img src="assets/title.png" alt="TaskMaster" width="220" height="35">
   </p>
 
   <p align="center">
     A process control system for UNIX.
     <br />
-    <a href="https://github.com/pscott/TaskMaster">View Demo</a>
-    ·
     <a href="https://github.com/pscott/TaskMaster/issues">Report Bug</a>
     ·
     <a href="https://github.com/pscott/TaskMaster/issues">Request Feature</a>
