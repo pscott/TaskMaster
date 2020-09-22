@@ -10,3 +10,6 @@ edition = "2018"
 redox_liner = "0.5.1"
 serde = {version = "1.0.116", features = ["derive"]}
 serde_json = "1.0.57"
+daemonize = "0.4.1"
+dirs = "3.0.1"
+users = "0.10.0"
