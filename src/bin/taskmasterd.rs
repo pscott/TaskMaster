@@ -1,14 +1,28 @@
 use std::io::{Read, Write};
 use std::{
-    convert::TryFrom,
     net::{TcpListener, TcpStream},
     path::Path,
+    process,
 };
-use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
+use taskmaster::{command::Command, config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
     let path = Path::new("config.yaml");
-    let _config = Config::try_from(path)?;
+    let config = config::parse(path);
+    #[cfg(debug_assertions)]
+    if let Ok(config) = config {
+        println!("{:?}", config);
+    } else {
+        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
+        process::exit(1);
+    };
+    #[cfg(not(debug_assertions))]
+    if let Ok(config) = config {
+    } else {
+        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
+        process::exit(1);
+    };
+
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
 
     for stream in listener.incoming() {
