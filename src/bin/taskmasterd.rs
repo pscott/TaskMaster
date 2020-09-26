@@ -1,12 +1,40 @@
-use std::io::{Read, Write};
+use daemonize::Daemonize;
 use std::{
     convert::TryFrom,
+    env,
+    fs::File,
+    io::{Error, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
-    path::Path,
+    path::{Path, PathBuf},
 };
 use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
+use users::{get_current_gid, get_current_uid};
+
+fn daemonize(home: &PathBuf) -> Result<(), std::io::Error> {
+    let stderr = File::create(home.join("taskmasterd.log"))?;
+
+    let daemonize = Daemonize::new()
+        .pid_file(home.join("taskmasterd.pid"))
+        .chown_pid_file(true)
+        .working_directory(home)
+        .user(get_current_uid())
+        .group(get_current_gid())
+        .umask(0o027)
+        .stderr(stderr)
+        .privileged_action(|| "Executed before drop privileges");
+
+    match daemonize.start() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(Error::new(ErrorKind::Other, e)),
+    }
+}
 
 fn main() -> Result<(), std::io::Error> {
+    let dir = env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Impossible to get user home directory"))?;
+    daemonize(&dir)?;
+
     let path = Path::new("config.yaml");
     let _config = Config::try_from(path)?;
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
