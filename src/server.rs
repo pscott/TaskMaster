@@ -1,10 +1,14 @@
 use crate::{command::Command, config::Config, threadpool::ThreadPool, DEFAULT_ADDR};
-use std::io::{Read, Write};
+use daemonize::Daemonize;
 use std::{
     convert::TryFrom,
+    env,
+    fs::File,
+    io::{Error, ErrorKind, Read, Write},
     net::{TcpListener, TcpStream},
-    path::Path,
+    path::{Path, PathBuf},
 };
+use users::{get_current_gid, get_current_uid};
 
 /// Number of threads in the `ThreadPool`.
 const NUM_THREADS: usize = 4;
@@ -15,6 +19,11 @@ const NUM_THREADS: usize = 4;
 ///
 /// Errors if it parsing the config file errors, or if binding to the default address fails.
 pub fn run() -> Result<(), std::io::Error> {
+    let dir = env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Impossible to get user home directory"))?;
+    daemonize(&dir)?;
+
     let path = Path::new("config.yaml");
     let _config = Config::try_from(path)?;
 
@@ -53,4 +62,24 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+/// Daemonize the current program.
+fn daemonize(home: &PathBuf) -> Result<(), std::io::Error> {
+    let stderr = File::create(home.join("taskmasterd.log"))?;
+
+    let daemonize = Daemonize::new()
+        .pid_file(home.join("taskmasterd.pid"))
+        .chown_pid_file(true)
+        .working_directory(home)
+        .user(get_current_uid())
+        .group(get_current_gid())
+        .umask(0o027)
+        .stderr(stderr)
+        .privileged_action(|| "Executed before drop privileges");
+
+    match daemonize.start() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(Error::new(ErrorKind::Other, e)),
+    }
 }
