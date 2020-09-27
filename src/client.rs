@@ -23,6 +23,14 @@ impl Completer for EmptyCompleter {
 pub fn run() -> Result<(), String> {
     let mut con = Context::new();
 
+    // Try connecting to the daemon to make sure it's running.
+    {
+        let _stream = TcpStream::connect(DEFAULT_ADDR).map_err(|_| {
+            "Could not connect to the daemon. You can start the daemon by typing `taskmasterd`"
+                .to_string()
+        })?;
+    }
+
     loop {
         let line = con
             .read_line(TASKMASTER_PROMPT, None, &mut EmptyCompleter)

@@ -10,12 +10,10 @@ impl ThreadPool {
     /// Create a new `ThreadPool`.
     ///
     /// The size is the number of threads in the pool.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the size is zero.
-    pub fn new(size: usize) -> Self {
-        assert!(size > 0);
+    pub fn new(size: usize) -> Result<Self, &'static str> {
+        if size < 1 {
+            return Err("Number of threads too small");
+        }
 
         let (sender, receiver) = mpsc::channel();
         let receiver = Arc::new(Mutex::new(receiver));
@@ -25,7 +23,7 @@ impl ThreadPool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        Self { workers, sender }
+        Ok(Self { workers, sender })
     }
 
     pub fn execute<F>(&self, f: F)
@@ -35,7 +33,7 @@ impl ThreadPool {
         let job = Box::new(f);
 
         if let Err(e) = self.sender.send(Message::NewJob(job)) {
-            eprintln!("{:?}", e);
+            eprintln!("Failed to send message: {:?}", e);
         }
     }
 }
@@ -45,7 +43,7 @@ impl Drop for ThreadPool {
         // Iterate through the Workers once to make sure that they all receive a Terminate message.
         for _ in &self.workers {
             if let Err(e) = self.sender.send(Message::Terminate) {
-                eprintln!("{:?}", e);
+                eprintln!("Failed to send Terminate: {:?}", e);
             }
         }
 
@@ -70,7 +68,7 @@ impl Worker {
             let lock = match receiver.lock() {
                 Ok(lock) => lock,
                 Err(e) => {
-                    eprintln!("{:?}", e);
+                    eprintln!("Failed to acquire lock: {:?}", e);
                     continue;
                 }
             };
@@ -78,20 +76,16 @@ impl Worker {
             let message = match lock.recv() {
                 Ok(message) => message,
                 Err(e) => {
-                    eprintln!("{:?}", e);
+                    eprintln!("Failed to receive: {:?}", e);
                     continue;
                 }
             };
 
             match message {
                 Message::NewJob(job) => {
-                    println!("Worker #{} got a job; executing", id);
-
                     job();
                 }
                 Message::Terminate => {
-                    println!("Worker #{} was told to terminate", id);
-
                     break;
                 }
             }

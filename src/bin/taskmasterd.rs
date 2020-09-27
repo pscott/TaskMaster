@@ -1,5 +1,5 @@
 use taskmaster::server;
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), String> {
     server::run()
 }

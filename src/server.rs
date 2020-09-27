@@ -4,7 +4,7 @@ use std::{
     convert::TryFrom,
     env,
     fs::File,
-    io::{Error, ErrorKind, Read, Write},
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
 };
@@ -18,18 +18,19 @@ const NUM_THREADS: usize = 4;
 /// # Errors
 ///
 /// Errors if it parsing the config file errors, or if binding to the default address fails.
-pub fn run() -> Result<(), std::io::Error> {
+pub fn run() -> Result<(), String> {
     let dir = env::var_os("HOME")
         .map(PathBuf::from)
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Impossible to get user home directory"))?;
+        .ok_or_else(|| "Impossible to get user home directory".to_string())?;
+
     daemonize(&dir)?;
 
+    let pool = ThreadPool::new(NUM_THREADS)?;
+
     let path = Path::new("config.yaml");
-    let _config = Config::try_from(path)?;
+    let _config = Config::try_from(path).map_err(|e| format!("{:?}", e))?;
 
-    let listener = TcpListener::bind(DEFAULT_ADDR)?;
-
-    let pool = ThreadPool::new(NUM_THREADS);
+    let listener = TcpListener::bind(DEFAULT_ADDR).map_err(|e| format!("{:?}", e))?;
 
     for stream in listener.incoming() {
         match stream {
@@ -55,7 +56,7 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
             // Answer back to client with command's status.
             stream
                 .write_all(b"Your program is running ok.")
-                .map_err(|e| e.to_string())?;
+                .map_err(|e| format!("{:?}", e))?;
         }
         Err(e) => {
             eprintln!("Could not read from stream: {:?}", e);
@@ -65,8 +66,8 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
 }
 
 /// Daemonize the current program.
-fn daemonize(home: &PathBuf) -> Result<(), std::io::Error> {
-    let stderr = File::create(home.join("taskmasterd.log"))?;
+fn daemonize(home: &PathBuf) -> Result<(), String> {
+    let stderr = File::create(home.join("taskmasterd.log")).map_err(|e| format!("{:?}", e))?;
 
     let daemonize = Daemonize::new()
         .pid_file(home.join("taskmasterd.pid"))
@@ -80,6 +81,6 @@ fn daemonize(home: &PathBuf) -> Result<(), std::io::Error> {
 
     match daemonize.start() {
         Ok(_) => Ok(()),
-        Err(e) => Err(Error::new(ErrorKind::Other, e)),
+        Err(e) => Err(e.to_string()),
     }
 }
