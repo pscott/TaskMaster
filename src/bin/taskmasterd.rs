@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use std::{
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
     path::Path,
     process,
@@ -7,21 +7,11 @@ use std::{
 use taskmaster::{command::Command, config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
-    let path = Path::new("config.yaml");
-    let config = config::parse(path);
-    #[cfg(debug_assertions)]
-    if let Ok(config) = config {
-        println!("{:?}", config);
-    } else {
-        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
+
+    let _config = config::parse(Path::new("config.yaml")).unwrap_or_else(|err| {
+        eprintln!("{}", err);
         process::exit(1);
-    };
-    #[cfg(not(debug_assertions))]
-    if let Ok(config) = config {
-    } else {
-        println!("Parsing error! Configuration file does not respect taskmasterctl/yaml format.");
-        process::exit(1);
-    };
+    });
 
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
 

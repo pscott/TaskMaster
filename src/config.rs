@@ -1,6 +1,11 @@
+//! # Config
+//!
+//! Library parsing the taskmasterd and taskmasterctl configuration files.
+
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    error::Error,
     fs::File,
     path::{Path, PathBuf},
     process,
@@ -88,14 +93,22 @@ impl Default for Config {
     }
 }
 
-/// # Errors
+
+
 ///
-/// Will return `Err` if `file` does not exist or the user does not have
-/// permission to read it or yaml format is not respected.
-pub fn parse(
-    file_name: &Path,
-) -> Result<HashMap<String, HashMap<String, Config>>, serde_yaml::Error> {
-    let file = File::open(&file_name).expect("Unable to open config file");
+/// File order it will look at, and pick the first it found.
+///    /etc/supervisor/supervisord.conf
+///    ../etc/supervisord.conf (Relative to the executable)
+///    ../supervisord.conf (Relative to the executable)
+///    $CWD/supervisord.conf
+///    $CWD/etc/supervisord.conf
+///    /etc/supervisord.conf
+///    /etc/supervisor/supervisord.conf (since Supervisor 3.3.0)
+///
+pub fn parse(file_name: &Path) -> Result<HashMap<std::string::String, HashMap<std::string::String, Config>>, Box<dyn Error>> {
+
+
+    let file = File::open(&file_name)?;
     let d: HashMap<String, HashMap<String, Config>> = serde_yaml::from_reader(file)?;
     Ok(d)
 }
