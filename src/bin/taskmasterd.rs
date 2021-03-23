@@ -1,17 +1,16 @@
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    path::Path,
     process,
 };
 use taskmaster::{command::Command, config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
-
-    let _config = config::parse(Path::new("config.yaml")).unwrap_or_else(|err| {
+    let _config = config::parse().unwrap_or_else(|err| {
         eprintln!("{}", err);
         process::exit(1);
     });
+
 
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
 

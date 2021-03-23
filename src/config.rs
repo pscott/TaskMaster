@@ -93,8 +93,6 @@ impl Default for Config {
     }
 }
 
-
-
 ///
 /// File order it will look at, and pick the first it found.
 ///    /etc/supervisor/supervisord.conf
@@ -105,10 +103,29 @@ impl Default for Config {
 ///    /etc/supervisord.conf
 ///    /etc/supervisor/supervisord.conf (since Supervisor 3.3.0)
 ///
-pub fn parse(file_name: &Path) -> Result<HashMap<std::string::String, HashMap<std::string::String, Config>>, Box<dyn Error>> {
+mod config {
+    use super::*;
 
+    const LOOKAT: [&'static str; 6] = [
+        "../etc/taskmasterd.yaml",
+        "../taskmasterd.yaml",
+        "./taskmasterd.yaml",
+        "./etc/taskmasterd.yaml",
+        "/etc/taskmasterdd.yaml",
+        "/etc/taskmaster/taskmasterd.conf",
+    ];
 
-    let file = File::open(&file_name)?;
+    pub fn find_file() -> Result<&'static &'static str, Box<dyn Error>> {
+        match LOOKAT.iter().find(|path| Path::new(path).exists()) {
+            Some(p) => return Ok(p),
+            None => return Err("Could not find any configuration file.".into())
+        };
+    }
+}
+
+pub fn parse() -> Result<HashMap<std::string::String, HashMap<std::string::String, Config>>, Box<dyn Error>> {
+    let path = config::find_file()?;
+    let file = File::open(&path)?;
     let d: HashMap<String, HashMap<String, Config>> = serde_yaml::from_reader(file)?;
     Ok(d)
 }
