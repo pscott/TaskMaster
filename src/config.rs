@@ -8,7 +8,6 @@ use std::{
     error::Error,
     fs::File,
     path::{Path, PathBuf},
-    process,
 };
 
 /// Restart conditions for a service.
@@ -23,7 +22,6 @@ enum Restart {
 /// Configuration structure used to run a task.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-#[serde(default)]
 pub struct Config {
     /// Command to run.
     cmd: String,
@@ -31,8 +29,9 @@ pub struct Config {
     // u16 is fine because we are not expecting a machine to run more
     // than 2^16 proc at any single time.
     numprocs: u16,
-    /// Program mask running under
-    umask: i32,
+    /// Program mask running under: octal or string rwx------.
+    // https://docs.rs/umask/1.0.0/umask/
+    umask: String,
     /// Working directory of the task.
     workingdir: PathBuf,
     /// Service starting at load time.
@@ -55,42 +54,6 @@ pub struct Config {
     stderr: PathBuf,
     /// Environment variable service is running into.
     env: HashMap<String, String>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        let bin = "ls";
-        let home = dirs::home_dir();
-        if home.is_none() {
-            eprintln!("Impossible to get user home directory!");
-            process::exit(1);
-        }
-        let home = home.unwrap();
-
-        #[cfg(debug_assertions)]
-        println!("{:?}", home);
-
-        Self {
-            cmd: bin.into(),
-            numprocs: 1,
-            umask: 0o027,
-            workingdir: home.clone(),
-            autostart: true,
-            autorestart: Restart::Never,
-            exitcodes: {
-                let mut v = Vec::new();
-                v.push(0);
-                v
-            },
-            startretries: 0,
-            starttime: 0,
-            stopsignal: "SIGTERM".to_string(),
-            stoptime: 0,
-            stdout: home.join(bin.to_string() + ".stdout"), // Would be lovely to replace "bin" by "cmd" from the struct itself
-            stderr: home.join(bin.to_string() + ".stderr"), // Same
-            env: HashMap::new(),
-        }
-    }
 }
 
 ///
@@ -126,7 +89,9 @@ mod config {
 pub fn parse() -> Result<HashMap<std::string::String, HashMap<std::string::String, Config>>, Box<dyn Error>> {
     let path = config::find_file()?;
     let file = File::open(&path)?;
+
     let d: HashMap<String, HashMap<String, Config>> = serde_yaml::from_reader(file)?;
+
     Ok(d)
 }
 
