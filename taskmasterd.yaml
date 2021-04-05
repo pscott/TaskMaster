@@ -33,3 +33,4 @@ programs:
                 stoptime: 10
                 stdout: /tmp/vgsworker.stdout
                 stderr: /tmp/vgsworker.stderr
+

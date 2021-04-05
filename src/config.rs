@@ -1,11 +1,14 @@
 //! # Config
 //!
 //! Library parsing the taskmasterd and taskmasterctl configuration files.
+//! Ref http://supervisord.org/configuration.html#unix-http-server-section-settings 
 
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    convert::TryFrom,
     error::Error,
+    fmt::Debug,
     fs::File,
     path::{Path, PathBuf},
 };
@@ -19,56 +22,216 @@ enum Restart {
     Unexpected,
 }
 
-/// Configuration structure used to run a task.
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "lowercase")]
 pub struct Config {
-    /// Command to run.
-    cmd: String,
-    /// Number of processors this task should run with.
-    // u16 is fine because we are not expecting a machine to run more
-    // than 2^16 proc at any single time.
-    numprocs: u16,
-    /// Program mask running under: octal or string rwx------.
-    // https://docs.rs/umask/1.0.0/umask/
-    umask: String,
-    /// Working directory of the task.
-    workingdir: PathBuf,
-    /// Service starting at load time.
-    autostart: bool,
-    /// Service restarting when finished.
-    autorestart: Restart,
-    /// Autorestart callback trigger value.
-    exitcodes: Vec<i32>,
-    /// Restart attempts.
-    startretries: i32,
-    /// Delay before start.
-    starttime: i32,
-    /// Signal received by supervisord trigger service termination.
-    stopsignal: String,
-    /// Running period.
-    stoptime: i32,
-    /// Stdout logfile path.
-    stdout: PathBuf,
-    /// Stderr logfile path.
-    stderr: PathBuf,
-    /// Environment variable service is running into.
-    env: HashMap<String, String>,
+    programs: Option<Vec<Program>>,
+    taskmasterd: Option<Taskmasterd>,
+    taskmasterctl: Option<Taskmasterctl>,
+    unix_http_server: Option<UnixHttpServer>,
+    inet_http_server: Option<InetHttpServer>,
+    include: Option<Include>,
+    group: Option<Vec<Group>>,
+    fcgi_program: Option<Vec<FcgiProgram>>,
+    eventlistener: Option<Vec<EventListener>>,
+    rpcinterface: Option<Vec<RpcInterface>>
 }
 
-///
+/// Program structure is a section of Config in order to run a task.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct Program {
+    command: String,
+    process_name: String,
+    numprocs: u16,
+    directory: PathBuf,
+    umask: String, // https://docs.rs/umask/1.0.0/umask/
+    priority: i32,
+    autostart: bool
+    autorestart: Restart,
+    startsecs: i32,
+    startretries: i32,
+    exitcodes: Vec<i32>,
+    stopsignal: Vec<String>,
+    stopwaitsecs: i32,
+    stopasgroup: bool,
+    killasgroup: bool,
+    user: String,
+    redirect_stderr: bool,
+    stdout_logfile: PathBuf,
+    stdout_logfile_maxbytes: i32,
+    stdout_logfile_backups: i32,
+    stdout_capture_maxbytes: i32,
+    stdout_events_enabled: bool,
+    stderr_logfile: PathBuf,
+    stderr_logfile_maxbytes: i32,
+    stderr_logfile_backups: i32,
+    stderr_capture_maxbytes: i32,
+    stderr_events_enabled: bool,
+    environment: hashMap<String, String>,
+    serverurl: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+enum LogLevel {
+    Critical,
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+    Blather
+}
+
+/// The logging level, dictating what is written to the supervisord activity log.
+/// One of critical, error, warn, info, debug, trace, or blather.
+/// Note that at log level debug, the supervisord log file will record the
+/// stderr/stdout output of its child processes and extended info info about
+/// process state changes, which is useful for debugging a process which isn’t starting properly.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct Taskmasterd {
+    logfile: PathBuf,
+    logfile_maxbytes: i32,
+    logfile_backups: i32,
+    loglevel: LogLevel,
+    pidfile: i32,
+    nodaemon: bool,
+    minfds: i32,
+    minprocs: i32,
+    umask: String,
+    user: String
+    identifier: String,
+    directory: PathBuf,
+    nocleanup: bool,
+    childlogdir: PathBuf,
+    strip_ansi: bool,
+    environment: HashMap<String, String>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct Taskmasterctl {
+    serverurl: String,
+    username: String,
+    password: String,
+    prompt: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct UnixHttpServer {
+    file: String
+    chmod: String
+    chown: String,
+    username: String,
+    password: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct InetHttpServer {
+    port: String, // IPV4 or IPV6 + PORT
+    username: String,
+    password: String
+}
+
+/// Files replace the order and values of LOOKAT
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct Include {
+    files: Vec<String>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct Group {
+    programs: String,
+    priority: i32
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct FcgiProgram {
+    command: String,
+    socket=unix:///var/run/supervisor/%(program_name)s.sock
+    socket_owner=chrism
+    socket_mode=0700
+    process_name: String,
+    numprocs: u16,
+    directory: PathBuf,
+    umask: String, // https://docs.rs/umask/1.0.0/umask/
+    priority: i32,
+    autostart: bool
+    autorestart: Restart,
+    startsecs: i32,
+    startretries: i32,
+    exitcodes: Vec<i32>,
+    stopsignal: Vec<String>,
+    stopwaitsecs: i32,
+    stopasgroup: bool,
+    killasgroup: bool,
+    user: String,
+    redirect_stderr: bool,
+    stdout_logfile: PathBuf,
+    stdout_logfile_maxbytes: i32,
+    stdout_logfile_backups: i32,
+    stdout_events_enabled: bool,
+    stderr_logfile: PathBuf,
+    stderr_logfile_maxbytes: i32,
+    stderr_logfile_backups: i32,
+    stderr_events_enabled: bool,
+    environment: hashMap<String, String>,
+    serverurl: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct EventListener {
+    command: String,
+    process_name: String,
+    numprocs: u16,
+    events=PROCESS_STATE
+    buffer_size=10
+    directory: PathBuf,
+    umask: String, // https://docs.rs/umask/1.0.0/umask/
+    priority: i32,
+    autostart: bool
+    autorestart: Restart,
+    startsecs: i32,
+    startretries: i32,
+    exitcodes: Vec<i32>,
+    stopsignal: Vec<String>,
+    stopwaitsecs: i32,
+    stopasgroup: bool,
+    killasgroup: bool,
+    user: String,
+    redirect_stderr: bool,
+    stdout_logfile: PathBuf,
+    stdout_logfile_maxbytes: i32,
+    stdout_logfile_backups: i32,
+    stdout_events_enabled: bool,
+    stderr_logfile: PathBuf,
+    stderr_logfile_maxbytes: i32,
+    stderr_logfile_backups: i32,
+    stderr_events_enabled: bool,
+    environment: hashMap<String, String>,
+    serverurl: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub struct RpcInterface {
+    tasmkaster.rpcinterface_factory: String, // taskmaster.rpcinterface:make_main_rpcinterface
+    retries: i32
+}
+
 /// File order it will look at, and pick the first it found.
-///    /etc/supervisor/supervisord.conf
-///    ../etc/supervisord.conf (Relative to the executable)
-///    ../supervisord.conf (Relative to the executable)
-///    $CWD/supervisord.conf
-///    $CWD/etc/supervisord.conf
-///    /etc/supervisord.conf
-///    /etc/supervisor/supervisord.conf (since Supervisor 3.3.0)
-///
 mod config {
     use super::*;
 
+    // LOOKAT is Default values of Include::files
     const LOOKAT: [&'static str; 6] = [
         "../etc/taskmasterd.yaml",
         "../taskmasterd.yaml",
@@ -81,18 +244,18 @@ mod config {
     pub fn find_file() -> Result<&'static &'static str, Box<dyn Error>> {
         match LOOKAT.iter().find(|path| Path::new(path).exists()) {
             Some(p) => return Ok(p),
-            None => return Err("Could not find any configuration file.".into())
+            None => return Err("Could not find any configuration file.".into()),
         };
     }
 }
 
-pub fn parse() -> Result<HashMap<std::string::String, HashMap<std::string::String, Config>>, Box<dyn Error>> {
-    let path = config::find_file()?;
-    let file = File::open(&path)?;
-
-    let d: HashMap<String, HashMap<String, Config>> = serde_yaml::from_reader(file)?;
-
-    Ok(d)
+impl Config {
+    pub fn parse() -> Result<Config, Box<dyn Error>> {
+        let valid_path_to_conf = config::find_file()?;
+        let file = File::open(&path)?;
+        let deserialized_conf: Config = serde_yaml::from_reader(file)?;
+        Ok(deserialized_conf)
+    }
 }
 
 #[cfg(test)]
@@ -100,36 +263,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn empty_default_values() {
-        let conf = Config::default();
-        assert_eq!(conf.cmd, "ls");
-        assert_eq!(conf.exitcodes[0], 0);
-        assert_eq!(conf.workingdir, dirs::home_dir().unwrap());
-        assert_eq!(conf.stdout, dirs::home_dir().unwrap().join("ls.stdout"));
-        assert_eq!(conf.stderr, dirs::home_dir().unwrap().join("ls.stderr"));
-    }
-
-    #[test]
-    fn prg_default_values() {
-        let conf = Config {
-            cmd: "nginx".to_string(),
-            ..Config::default()
-        };
-        assert_eq!(conf.cmd, "nginx");
-        assert_eq!(conf.exitcodes[0], 0);
-        assert_eq!(conf.workingdir, dirs::home_dir().unwrap());
-        // assert_ne!(conf.stdout, dirs::home_dir().unwrap().join("ls.stdout"));
-        // assert_ne!(conf.stderr, dirs::home_dir().unwrap().join("ls.stderr"));
-    }
-
-    #[test]
-    fn config_files() {
-        assert!(parse(Path::new("tests/config.yaml")).is_ok());
-        assert!(parse(Path::new("tests/empty_section.yaml")).is_err());
-        assert!(parse(Path::new("tests/empty.yaml")).is_err());
-        assert!(parse(Path::new("tests/lot_sections.yaml")).is_ok());
-        assert!(parse(Path::new("tests/no_vec.yaml")).is_err());
-        assert!(parse(Path::new("tests/num_section.yaml")).is_ok());
-        assert!(parse(Path::new("tests/unknow_section.yaml")).is_err());
-    }
+    fn empty_default_values() {}
 }

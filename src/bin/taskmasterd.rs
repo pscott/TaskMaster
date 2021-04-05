@@ -1,16 +1,31 @@
+use std::env;
+use std::ffi::OsStr;
+use std::path::Path;
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
     process,
 };
-use taskmaster::{command::Command, config, DEFAULT_ADDR};
+use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
-    let _config = config::parse().unwrap_or_else(|err| {
-        eprintln!("{}", err);
+    let conf = Config::parse().unwrap_or_else(|err| {
+        eprintln!(
+            "{}: {}",
+            env::args()
+                .next()
+                .as_ref()
+                .map(Path::new)
+                .and_then(Path::file_name)
+                .and_then(OsStr::to_str)
+                .map(String::from)
+                .unwrap(),
+            err
+        );
         process::exit(1);
     });
 
+    println! {"{:?}", conf};
 
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
 
