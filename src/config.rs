@@ -6,7 +6,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
-    convert::TryFrom,
     error::Error,
     fmt::Debug,
     fs::File,
@@ -47,7 +46,7 @@ pub struct Program {
     directory: PathBuf,
     umask: String, // https://docs.rs/umask/1.0.0/umask/
     priority: i32,
-    autostart: bool
+    autostart: bool,
     autorestart: Restart,
     startsecs: i32,
     startretries: i32,
@@ -68,7 +67,7 @@ pub struct Program {
     stderr_logfile_backups: i32,
     stderr_capture_maxbytes: i32,
     stderr_events_enabled: bool,
-    environment: hashMap<String, String>,
+    environment: HashMap<String, String>,
     serverurl: String
 }
 
@@ -101,7 +100,7 @@ pub struct Taskmasterd {
     minfds: i32,
     minprocs: i32,
     umask: String,
-    user: String
+    user: String,
     identifier: String,
     directory: PathBuf,
     nocleanup: bool,
@@ -122,8 +121,8 @@ pub struct Taskmasterctl {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub struct UnixHttpServer {
-    file: String
-    chmod: String
+    file: String,
+    chmod: String,
     chown: String,
     username: String,
     password: String
@@ -155,15 +154,15 @@ pub struct Group {
 #[serde(rename_all = "lowercase")]
 pub struct FcgiProgram {
     command: String,
-    socket=unix:///var/run/supervisor/%(program_name)s.sock
-    socket_owner=chrism
-    socket_mode=0700
+    socket: String, //=unix:///var/run/supervisor/%(program_name)s.sock
+    socket_owner: String,
+    socket_mode: String,
     process_name: String,
     numprocs: u16,
     directory: PathBuf,
     umask: String, // https://docs.rs/umask/1.0.0/umask/
     priority: i32,
-    autostart: bool
+    autostart: bool,
     autorestart: Restart,
     startsecs: i32,
     startretries: i32,
@@ -182,7 +181,7 @@ pub struct FcgiProgram {
     stderr_logfile_maxbytes: i32,
     stderr_logfile_backups: i32,
     stderr_events_enabled: bool,
-    environment: hashMap<String, String>,
+    environment: HashMap<String, String>,
     serverurl: String
 }
 
@@ -192,12 +191,12 @@ pub struct EventListener {
     command: String,
     process_name: String,
     numprocs: u16,
-    events=PROCESS_STATE
-    buffer_size=10
+    events: String, //PROCESS_STATE
+    buffer_size: i32,
     directory: PathBuf,
     umask: String, // https://docs.rs/umask/1.0.0/umask/
     priority: i32,
-    autostart: bool
+    autostart: bool,
     autorestart: Restart,
     startsecs: i32,
     startretries: i32,
@@ -216,14 +215,14 @@ pub struct EventListener {
     stderr_logfile_maxbytes: i32,
     stderr_logfile_backups: i32,
     stderr_events_enabled: bool,
-    environment: hashMap<String, String>,
+    environment: HashMap<String, String>,
     serverurl: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub struct RpcInterface {
-    tasmkaster.rpcinterface_factory: String, // taskmaster.rpcinterface:make_main_rpcinterface
+    rpcinterface_factory: String, // taskmaster.rpcinterface:make_main_rpcinterface
     retries: i32
 }
 
@@ -252,7 +251,7 @@ mod config {
 impl Config {
     pub fn parse() -> Result<Config, Box<dyn Error>> {
         let valid_path_to_conf = config::find_file()?;
-        let file = File::open(&path)?;
+        let file = File::open(&valid_path_to_conf)?;
         let deserialized_conf: Config = serde_yaml::from_reader(file)?;
         Ok(deserialized_conf)
     }
