@@ -24,16 +24,16 @@ enum Restart {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub struct Config {
-    programs: Option<Vec<Program>>,
+    programs: Option<HashMap<String, Program>>,
     taskmasterd: Option<Taskmasterd>,
     taskmasterctl: Option<Taskmasterctl>,
     unix_http_server: Option<UnixHttpServer>,
     inet_http_server: Option<InetHttpServer>,
     include: Option<Include>,
-    group: Option<Vec<Group>>,
-    fcgi_program: Option<Vec<FcgiProgram>>,
-    eventlistener: Option<Vec<EventListener>>,
-    rpcinterface: Option<Vec<RpcInterface>>
+    group: Option<HashMap<String, Group>>,
+    fcgi_program: Option<HashMap<String, FcgiProgram>>,
+    eventlistener: Option<HashMap<String, EventListener>>,
+    rpcinterface: Option<HashMap<String, RpcInterface>>
 }
 
 /// Program structure is a section of Config in order to run a task.
