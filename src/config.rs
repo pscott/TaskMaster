@@ -24,16 +24,16 @@ enum Restart {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub struct Config {
-    programs: Option<Vec<Program>>,
+    programs: Option<HashMap<String, Program>>,
     taskmasterd: Option<Taskmasterd>,
     taskmasterctl: Option<Taskmasterctl>,
     unix_http_server: Option<UnixHttpServer>,
     inet_http_server: Option<InetHttpServer>,
     include: Option<Include>,
-    group: Option<Vec<Group>>,
-    fcgi_program: Option<Vec<FcgiProgram>>,
-    eventlistener: Option<Vec<EventListener>>,
-    rpcinterface: Option<Vec<RpcInterface>>
+    group: Option<HashMap<String, Group>>,
+    fcgi_program: Option<HashMap<String, FcgiProgram>>,
+    eventlistener: Option<HashMap<String, EventListener>>,
+    rpcinterface: Option<HashMap<String, RpcInterface>>
 }
 
 /// Program structure is a section of Config in order to run a task.
@@ -41,34 +41,34 @@ pub struct Config {
 #[serde(deny_unknown_fields)]
 pub struct Program {
     command: String,
-    process_name: String,
-    numprocs: u16,
-    directory: PathBuf,
-    umask: String, // https://docs.rs/umask/1.0.0/umask/
-    priority: i32,
-    autostart: bool,
-    autorestart: Restart,
-    startsecs: i32,
-    startretries: i32,
-    exitcodes: Vec<i32>,
-    stopsignal: Vec<String>,
-    stopwaitsecs: i32,
-    stopasgroup: bool,
-    killasgroup: bool,
-    user: String,
-    redirect_stderr: bool,
-    stdout_logfile: PathBuf,
-    stdout_logfile_maxbytes: i32,
-    stdout_logfile_backups: i32,
-    stdout_capture_maxbytes: i32,
-    stdout_events_enabled: bool,
-    stderr_logfile: PathBuf,
-    stderr_logfile_maxbytes: i32,
-    stderr_logfile_backups: i32,
-    stderr_capture_maxbytes: i32,
-    stderr_events_enabled: bool,
-    environment: HashMap<String, String>,
-    serverurl: String
+    process_name: Option<String>,
+    numprocs: Option<u16>,
+    directory: Option<PathBuf>,
+    umask: Option<String>, // https://docs.rs/umask/1.0.0/umask/
+    priority: Option<i32>,
+    autostart: Option<bool>,
+    autorestart: Option<Restart>,
+    startsecs: Option<i32>,
+    startretries: Option<i32>,
+    exitcodes: Option<Vec<i32>>,
+    stopsignal: Option<Vec<String>>,
+    stopwaitsecs: Option<i32>,
+    stopasgroup: Option<bool>,
+    killasgroup: Option<bool>,
+    user: Option<String>,
+    redirect_stderr: Option<bool>,
+    stdout_logfile: Option<PathBuf>,
+    stdout_logfile_maxbytes: Option<i32>,
+    stdout_logfile_backups: Option<i32>,
+    stdout_capture_maxbytes: Option<i32>,
+    stdout_events_enabled: Option<bool>,
+    stderr_logfile: Option<PathBuf>,
+    stderr_logfile_maxbytes: Option<i32>,
+    stderr_logfile_backups: Option<i32>,
+    stderr_capture_maxbytes: Option<i32>,
+    stderr_events_enabled: Option<bool>,
+    environment: Option<HashMap<String, String>>,
+    serverurl: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
