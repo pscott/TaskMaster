@@ -25,7 +25,7 @@ fn main() -> Result<(), std::io::Error> {
         process::exit(1);
     });
 
-    println! {"{:?}", conf};
+    println! {"{:#?}", conf};
 
     let listener = TcpListener::bind(DEFAULT_ADDR)?;
 

@@ -12,7 +12,7 @@ programs:
                 startretries: 3
                 startsecs: 5
                 stopsignal:
-                        - TERM
+                        - SIGTERM
                 stopwaitsecs: 10
                 stdout_logfile: /tmp/nginx.stdout
                 stderr_logfile: /tmp/nginx.stderr
@@ -31,7 +31,7 @@ programs:
                 startretries: 3
                 startsecs: 5
                 stopsignal:
-                        - USR1
+                        - SIGUSR1
                 stopwaitsecs: 10
                 stdout_logfile: /tmp/vgsworker.stdout
                 stderr_logfile: /tmp/vgsworker.stderr

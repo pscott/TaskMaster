@@ -22,7 +22,7 @@ enum Restart {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     programs: Option<HashMap<String, Program>>,
     taskmasterd: Option<Taskmasterd>,
@@ -89,7 +89,7 @@ enum LogLevel {
 /// stderr/stdout output of its child processes and extended info info about
 /// process state changes, which is useful for debugging a process which isn’t starting properly.
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct Taskmasterd {
     logfile: PathBuf,
     logfile_maxbytes: i32,
@@ -110,7 +110,7 @@ pub struct Taskmasterd {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct Taskmasterctl {
     serverurl: String,
     username: String,
@@ -119,7 +119,7 @@ pub struct Taskmasterctl {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct UnixHttpServer {
     file: String,
     chmod: String,
@@ -129,7 +129,7 @@ pub struct UnixHttpServer {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct InetHttpServer {
     port: String, // IPV4 or IPV6 + PORT
     username: String,
@@ -138,20 +138,20 @@ pub struct InetHttpServer {
 
 /// Files replace the order and values of LOOKAT
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct Include {
     files: Vec<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct Group {
     programs: String,
     priority: i32
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct FcgiProgram {
     command: String,
     socket: String, //=unix:///var/run/supervisor/%(program_name)s.sock
@@ -186,7 +186,7 @@ pub struct FcgiProgram {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct EventListener {
     command: String,
     process_name: String,
@@ -220,7 +220,7 @@ pub struct EventListener {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields)]
 pub struct RpcInterface {
     rpcinterface_factory: String, // taskmaster.rpcinterface:make_main_rpcinterface
     retries: i32
