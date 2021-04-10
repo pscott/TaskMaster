@@ -28,7 +28,7 @@ use std::{
 };
 
 /// Restart conditions for a service.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 enum Restart {
     Never,
@@ -36,7 +36,7 @@ enum Restart {
     Unexpected,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     programs: Option<HashMap<String, Program>>,
@@ -63,7 +63,7 @@ pub struct Config {
 /// The name must not include a colon character or a bracket character.
 /// The value of the name is used as the value for the %(program_name)s string
 /// expression expansion within other values where specified.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Program {
     /// The command that will be run when this program is started.
@@ -301,7 +301,7 @@ pub struct Program {
     serverurl: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 enum LogLevel {
     Critical,
@@ -322,7 +322,7 @@ enum LogLevel {
 /// Note that at log level debug, the supervisord log file will record the
 /// stderr/stdout output of its child processes and extended info info about
 /// process state changes, which is useful for debugging a process which isn’t starting properly.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Taskmasterd {
     /// The path to the activity log of the taskmasterd process.
@@ -455,7 +455,7 @@ pub struct Taskmasterd {
 
 /// The configuration file may contain settings for the taskmasterctl interactive shell program.
 /// These options are listed below.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Taskmasterctl {
     /// The URL that should be used to access the taskmasterd server, e.g. http://localhost:9001.
@@ -500,7 +500,7 @@ pub struct Taskmasterctl {
 /// on a UNIX domain socket should be inserted.
 /// If the configuration file has no [unix_http_server] section,
 /// a UNIX domain socket HTTP server will not be started.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct UnixHttpServer {
     /// A path to a UNIX domain socket on which taskmaster will listen
@@ -539,7 +539,7 @@ pub struct UnixHttpServer {
 /// on a TCP (internet) socket should be inserted.
 /// If the configuration file has no [inet_http_server] section,
 /// an inet HTTP server will not be started.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct InetHttpServer {
     /// A TCP host:port value or (e.g. 127.0.0.1:9001) on which taskmaster will listen for HTTP/XML-RPC requests.
@@ -569,7 +569,7 @@ pub struct InetHttpServer {
 /// If the configuration file contains an [include] section, it must contain a single key named “files”.
 /// The values in this key specify other configuration files to be included within the configuration.
 /// For example, supervisord.conf could be included when migrating from Supervisor to Taskmaster tools.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Include {
     /// A space-separated sequence of file globs.
@@ -594,7 +594,7 @@ pub struct Include {
 /// The name is used within client applications that control the processes that are created as a result of this configuration.
 /// It is an error to create a group section that does not have a name.
 /// The name must not include a colon character or a bracket character.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Group {
     /// A comma-separated list of program names. The programs which are listed become members of the group.
@@ -610,7 +610,7 @@ pub struct Group {
 
 /// http://supervisord.org/configuration.html#fcgi-program-x-section-settings
 /// Taskamaster can manage groups of FastCGI processes that all listen on the same socket.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct FcgiProgram {
     /// The FastCGI socket for this program, either TCP or UNIX domain socket.
@@ -878,7 +878,7 @@ pub struct FcgiProgram {
 /// These pools contain processes that are meant to receive and respond to event notifications
 /// from taskmaster’s event system.
 /// http://supervisord.org/events.html#event-types
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct EventListener {
     /// The event listener pool’s event queue buffer size. When a listener pool’s event buffer
@@ -1140,7 +1140,7 @@ pub struct EventListener {
 
 /// Adding rpcinterface:x settings in the configuration file is only useful for people who wish
 /// to extend taskmaster with additional custom behavior.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct RpcInterface {
     /// pkg_resources “entry point” dotted name to your RPC interface’s factory function.
