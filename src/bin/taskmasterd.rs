@@ -9,7 +9,7 @@ use std::{
 use taskmaster::{command::Command, config::Config, DEFAULT_ADDR};
 
 fn main() -> Result<(), std::io::Error> {
-    let conf = Config::parse().unwrap_or_else(|err| {
+    let conf = Config::parse(None).unwrap_or_else(|err| {
         eprintln!(
             "{}: {}",
             env::args()

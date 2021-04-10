@@ -1166,7 +1166,7 @@ mod config {
         "./taskmasterd.yaml",
         "./etc/taskmasterd.yaml",
         "/etc/taskmasterdd.yaml",
-        "/etc/taskmaster/taskmasterd.conf"
+        "/etc/taskmaster/taskmasterd.conf",
     ];
 
     /// Returns the first found configuration file following order in LOOKAT
@@ -1180,9 +1180,14 @@ mod config {
 }
 
 impl Config {
-    pub fn parse() -> Result<Config, Box<dyn Error>> {
-        let valid_path_to_conf = config::find_file()?;
-        let file = File::open(&valid_path_to_conf)?;
+    pub fn parse(filename: Option<String>) -> Result<Config, Box<dyn Error>> {
+        let file = match filename {
+            Some(f) => File::open(&f)?,
+            None => {
+                let valid_path_to_conf = config::find_file()?;
+                File::open(&valid_path_to_conf)?
+            }
+        };
         let deserialized_conf: Config = serde_yaml::from_reader(file)?;
         Ok(deserialized_conf)
     }
@@ -1194,10 +1199,8 @@ mod tests {
 
     #[test]
     fn minimal_one_program() {
-        const LOOKAT: [&'static str; 1] = ["./config_files/one_program.yaml"];
-
-        let deser = Config::parse().unwrap();
-
+        let filename = Some(String::from("./config_files/one_program.yaml"));
+        let deser = Config::parse(filename).unwrap();
         let one_program = Config {
             programs: Some({
                 (0..1)
