@@ -871,7 +871,6 @@ pub struct FcgiProgram {
     /// Default: `AUTO`
     /// Required: No
     serverurl: Option<String>,
-
 }
 
 /// Taskmaster allows specialized homogeneous process groups (“event listener pools”) to be defined
@@ -882,7 +881,6 @@ pub struct FcgiProgram {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct EventListener {
-
     /// The event listener pool’s event queue buffer size. When a listener pool’s event buffer
     /// is overflowed (as can happen when an event listener pool cannot keep up with all of the
     /// events sent to it),the oldest event in the buffer is discarded.
@@ -1138,21 +1136,30 @@ pub struct EventListener {
     /// Default: `AUTO`
     /// Required: No
     serverurl: Option<String>,
-
 }
 
+/// Adding rpcinterface:x settings in the configuration file is only useful for people who wish
+/// to extend taskmaster with additional custom behavior.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct RpcInterface {
-    rpcinterface_factory: String, // taskmaster.rpcinterface:make_main_rpcinterface
-    retries: i32,
+    /// pkg_resources “entry point” dotted name to your RPC interface’s factory function.
+    /// Default: N/A
+    /// Required: No
+    rpcinterface_factory: Option<String>, // taskmaster.rpcinterface:make_main_rpcinterface
+
+    /// Default: `1`
+    /// Required: No
+    retries: Option<i32>,
 }
 
 /// File order it will look at, and pick the first it found.
 mod config {
     use super::*;
 
-    // LOOKAT is Default values of Include::files
+    /// LOOKAT is Default values of Include::files
+    /// It contains path to taskmasterd configuration files.
+    /// Path can be customized including `include` section.
     const LOOKAT: [&'static str; 6] = [
         "../etc/taskmasterd.yaml",
         "../taskmasterd.yaml",
@@ -1162,6 +1169,8 @@ mod config {
         "/etc/taskmaster/taskmasterd.conf",
     ];
 
+    /// Returns the first found configuration file following order in LOOKAT
+    /// of include if specified.
     pub fn find_file() -> Result<&'static &'static str, Box<dyn Error>> {
         match LOOKAT.iter().find(|path| Path::new(path).exists()) {
             Some(p) => return Ok(p),
