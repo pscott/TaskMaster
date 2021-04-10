@@ -1,0 +1,3 @@
+programs:
+  ls:
+    command: "/bin/ls -l"

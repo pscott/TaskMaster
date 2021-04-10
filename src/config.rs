@@ -1166,7 +1166,7 @@ mod config {
         "./taskmasterd.yaml",
         "./etc/taskmasterd.yaml",
         "/etc/taskmasterdd.yaml",
-        "/etc/taskmaster/taskmasterd.conf",
+        "/etc/taskmaster/taskmasterd.conf"
     ];
 
     /// Returns the first found configuration file following order in LOOKAT
@@ -1190,8 +1190,68 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    //    use super::*;
+    use super::*;
 
     #[test]
-    fn empty_default_values() {}
+    fn minimal_one_program() {
+        const LOOKAT: [&'static str; 1] = ["./config_files/one_program.yaml"];
+
+        let deser = Config::parse().unwrap();
+
+        let one_program = Config {
+            programs: Some({
+                (0..1)
+                    .map(|_| {
+                        (
+                            String::from("ls"),
+                            Program {
+                                command: String::from("/bin/ls -l"),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        )
+                    })
+                    .collect()
+            }),
+            taskmasterd: None,
+            taskmasterctl: None,
+            unix_http_server: None,
+            inet_http_server: None,
+            include: None,
+            group: None,
+            fcgi_program: None,
+            eventlistener: None,
+            rpcinterface: None,
+        };
+        assert_eq!(deser, one_program);
+    }
 }
