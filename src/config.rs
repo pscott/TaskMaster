@@ -209,7 +209,7 @@ pub struct Program {
     /// Set this value to 0 to indicate an unlimited log size.
     /// Default: `50MB`
     /// Required: No
-    stdout_logfile_maxbytes: Option<i32>,
+    stdout_logfile_maxbytes: Option<String>,
 
     /// The number of stdout_logfile backups to keep around resulting from process stdout log file rotation.
     /// If set to 0, no backups will be kept.
@@ -226,7 +226,7 @@ pub struct Program {
 
     /// If `true`, PROCESS_LOG_STDOUT events will be emitted when the process writes to its stdout file descriptor.
     /// The events will only be emitted if the file descriptor is not in capture mode at the time the data is received (see Capture Mode).
-    /// Default: `0`
+    /// Default: `false`
     /// Required: No
     stdout_events_enabled: Option<bool>,
 
@@ -245,7 +245,7 @@ pub struct Program {
     /// Accepts the same value types as stdout_logfile_maxbytes.
     /// Default: `50MB`
     /// Required: No
-    stderr_logfile_maxbytes: Option<i32>,
+    stderr_logfile_maxbytes: Option<String>,
 
     /// The number of backups to keep around resulting from process stderr log file rotation. If set to `0`, no backups will be kept.
     /// Default: `10`
@@ -337,7 +337,7 @@ pub struct Taskmasterd {
     /// Set this value to 0 to indicate an unlimited log size.
     /// Default: 50MB
     /// Required: No
-    logfile_maxbytes: Option<i32>, // Should with define an other type for KB MB etc to be used ?
+    logfile_maxbytes: Option<String>, // Should with define an other type for KB MB etc to be used ?
 
     /// The number of backups to keep around resulting from activity log file rotation.
     /// If set to 0, no backups will be kept.
@@ -359,7 +359,7 @@ pub struct Taskmasterd {
     /// which expands to the directory in which the taskmasterd configuration file was found.
     /// Default: $CWD/supervisord.pid
     /// Required: No
-    pidfile: Option<i32>,
+    pidfile: Option<PathBuf>,
 
     /// The umask of the supervisord process.
     /// Default: 022
@@ -412,7 +412,7 @@ pub struct Taskmasterd {
     /// in which the taskmasterd configuration file was found.
     /// Default: value of Python’s tempfile.gettempdir()
     /// Required: No
-    childlogdir: PathBuf,
+    childlogdir: Option<PathBuf>,
 
     /// Instruct taskmasterd to switch users to this UNIX user account before
     /// doing any meaningful processing. (e.g: antoine)
@@ -781,7 +781,7 @@ pub struct FcgiProgram {
     /// Set this value to 0 to indicate an unlimited log size.
     /// Default: `50MB`
     /// Required: No
-    stdout_logfile_maxbytes: Option<i32>,
+    stdout_logfile_maxbytes: Option<String>,
 
     /// The number of stdout_logfile backups to keep around resulting from process stdout log file rotation.
     /// If set to 0, no backups will be kept.
@@ -817,7 +817,7 @@ pub struct FcgiProgram {
     /// Accepts the same value types as stdout_logfile_maxbytes.
     /// Default: `50MB`
     /// Required: No
-    stderr_logfile_maxbytes: Option<i32>,
+    stderr_logfile_maxbytes: Option<String>,
 
     /// The number of backups to keep around resulting from process stderr log file rotation. If set to `0`, no backups will be kept.
     /// Default: `10`
@@ -893,7 +893,7 @@ pub struct EventListener {
     /// and “supervisor state change” events.
     /// Default: No default value
     /// Required: No
-    events: Option<HashMap<String, String>>,
+    events: Option<String>,
 
     /// A pkg_resources entry point string that resolves to a Python callable.
     /// The default value is taskmaster.dispatchers:default_handler.
@@ -1046,7 +1046,7 @@ pub struct EventListener {
     /// Set this value to 0 to indicate an unlimited log size.
     /// Default: `50MB`
     /// Required: No
-    stdout_logfile_maxbytes: Option<i32>,
+    stdout_logfile_maxbytes: Option<String>,
 
     /// The number of stdout_logfile backups to keep around resulting from process stdout log file rotation.
     /// If set to 0, no backups will be kept.
@@ -1082,7 +1082,7 @@ pub struct EventListener {
     /// Accepts the same value types as stdout_logfile_maxbytes.
     /// Default: `50MB`
     /// Required: No
-    stderr_logfile_maxbytes: Option<i32>,
+    stderr_logfile_maxbytes: Option<String>,
 
     /// The number of backups to keep around resulting from process stderr log file rotation. If set to `0`, no backups will be kept.
     /// Default: `10`
@@ -1389,25 +1389,7 @@ mod tests {
                 );
                 x
             },
-            taskmasterd: Some(Taskmasterd {
-                logfile: None,
-                logfile_maxbytes: None,
-                logfile_backups: None,
-                loglevel: None,
-                pidfile: None,
-                umask: None,
-                nodaemon: None,
-                silent: None,
-                minfds: None,
-                minprocs: None,
-                nocleanup: None,
-                childlogdir: PathBuf::from("/tmp/taskmasterd/"),
-                user: None,
-                directory: None,
-                strip_ansi: None,
-                environment: None,
-                identifier: None,
-            }),
+            taskmasterd: None,
             taskmasterctl: None,
             unix_http_server: None,
             inet_http_server: Some(InetHttpServer {
@@ -1543,149 +1525,102 @@ mod tests {
     /// This tests all fields from all sections.
     #[test]
     fn full_fileds_in_sections() {
-        let filename = Some(String::from("./config_files/all_min_fields.yaml"));
+        let filename = Some(String::from("./config_files/full_fields_n_sections.yaml"));
         let deser = Config::parse(filename).unwrap();
-        let min_fields = Config {
+        let all = Config {
             programs: {
-                let mut x: HashMap<String, Program> = HashMap::new();
-                x.insert(
-                    String::from("vogsphere"),
-                    Program {
-                        command: String::from("/usr/local/bin/vogsphere-worker --no-prefork"),
-                        process_name: None,
-                        numprocs: None,
-                        numprocs_start: None,
-                        priority: None,
-                        autostart: None,
-                        startsecs: None,
-                        startretries: None,
-                        autorestart: None,
-                        exitcodes: None,
-                        stopsignal: None,
-                        stopwaitsecs: None,
-                        stopasgroup: None,
-                        killasgroup: None,
-                        user: None,
-                        redirect_stderr: None,
-                        stdout_logfile: None,
-                        stdout_logfile_maxbytes: None,
-                        stdout_logfile_backups: None,
-                        stdout_capture_maxbytes: None,
-                        stdout_events_enabled: None,
-                        stdout_syslog: None,
-                        stderr_logfile: None,
-                        stderr_logfile_maxbytes: None,
-                        stderr_logfile_backups: None,
-                        stderr_capture_maxbytes: None,
-                        stderr_events_enabled: None,
-                        stderr_syslog: None,
-                        environment: None,
-                        directory: None,
-                        umask: None,
-                        serverurl: None,
-                    },
-                );
-                x.insert(
-                    String::from("nginx"),
-                    Program {
-                        command: String::from("/usr/local/bin/nginx -c /etc/nginx/test.conf"),
-                        process_name: None,
-                        numprocs: None,
-                        numprocs_start: None,
-                        priority: None,
-                        autostart: None,
-                        startsecs: None,
-                        startretries: None,
-                        autorestart: None,
-                        exitcodes: None,
-                        stopsignal: None,
-                        stopwaitsecs: None,
-                        stopasgroup: None,
-                        killasgroup: None,
-                        user: None,
-                        redirect_stderr: None,
-                        stdout_logfile: None,
-                        stdout_logfile_maxbytes: None,
-                        stdout_logfile_backups: None,
-                        stdout_capture_maxbytes: None,
-                        stdout_events_enabled: None,
-                        stdout_syslog: None,
-                        stderr_logfile: None,
-                        stderr_logfile_maxbytes: None,
-                        stderr_logfile_backups: None,
-                        stderr_capture_maxbytes: None,
-                        stderr_events_enabled: None,
-                        stderr_syslog: None,
-                        environment: None,
-                        directory: None,
-                        umask: None,
-                        serverurl: None,
-                    },
-                );
-                x.insert(
-                    String::from("apache"),
-                    Program {
-                        command: String::from("/bin/apached"),
-                        process_name: None,
-                        numprocs: None,
-                        numprocs_start: None,
-                        priority: None,
-                        autostart: None,
-                        startsecs: None,
-                        startretries: None,
-                        autorestart: None,
-                        exitcodes: None,
-                        stopsignal: None,
-                        stopwaitsecs: None,
-                        stopasgroup: None,
-                        killasgroup: None,
-                        user: None,
-                        redirect_stderr: None,
-                        stdout_logfile: None,
-                        stdout_logfile_maxbytes: None,
-                        stdout_logfile_backups: None,
-                        stdout_capture_maxbytes: None,
-                        stdout_events_enabled: None,
-                        stdout_syslog: None,
-                        stderr_logfile: None,
-                        stderr_logfile_maxbytes: None,
-                        stderr_logfile_backups: None,
-                        stderr_capture_maxbytes: None,
-                        stderr_events_enabled: None,
-                        stderr_syslog: None,
-                        environment: None,
-                        directory: None,
-                        umask: None,
-                        serverurl: None,
-                    },
-                );
-                x
+                (0..1)
+                    .map(|_| {
+                        (
+                            String::from("samba"),
+                            Program {
+                                command: String::from("/usr/sbin/smbd -F"),
+                                process_name: Some(String::from("%(program_name)s")),
+                                numprocs: Some(1),
+                                numprocs_start: Some(0),
+                                priority: Some(999),
+                                autostart: Some(true),
+                                startsecs: Some(1),
+                                startretries: Some(3),
+                                autorestart: Some(Restart::Unexpected),
+                                exitcodes: Some(vec![0]),
+                                stopsignal: Some(vec!["TERM".to_string(), "STOP".to_string()]),
+                                stopwaitsecs: Some(10),
+                                stopasgroup: Some(false),
+                                killasgroup: Some(false),
+                                user: Some(String::from("antoine")),
+                                redirect_stderr: Some(false),
+                                stdout_logfile: Some(PathBuf::from("AUTO")),
+                                stdout_logfile_maxbytes: Some(String::from("50MB")),
+                                stdout_logfile_backups: Some(10),
+                                stdout_capture_maxbytes: Some(0),
+                                stdout_events_enabled: Some(false),
+                                stdout_syslog: Some(false),
+                                stderr_logfile: Some(PathBuf::from("AUTO")),
+                                stderr_logfile_maxbytes: Some(String::from("50MB")),
+                                stderr_logfile_backups: Some(10),
+                                stderr_capture_maxbytes: Some(0),
+                                stderr_events_enabled: Some(false),
+                                stderr_syslog: Some(false),
+                                environment: Some({
+                                    let mut e: HashMap<String, String> = HashMap::new();
+                                    e.insert(String::from("USER"), String::from("abarthel"));
+                                    e.insert(
+                                        String::from("MAIL"),
+                                        String::from("abarthel@student.42.fr"),
+                                    );
+                                    e
+                                }),
+                                directory: Some(PathBuf::from("/home/antoine/")),
+                                umask: Some(String::from("0022")),
+                                serverurl: Some(String::from("AUTO")),
+                            },
+                        )
+                    })
+                    .collect()
             },
             taskmasterd: Some(Taskmasterd {
-                logfile: None,
-                logfile_maxbytes: None,
-                logfile_backups: None,
-                loglevel: None,
-                pidfile: None,
-                umask: None,
-                nodaemon: None,
-                silent: None,
-                minfds: None,
-                minprocs: None,
-                nocleanup: None,
-                childlogdir: PathBuf::from("/tmp/taskmasterd/"),
-                user: None,
-                directory: None,
-                strip_ansi: None,
-                environment: None,
-                identifier: None,
+                logfile: Some(PathBuf::from("$CWD/taskmasterd.log")),
+                logfile_maxbytes: Some(String::from("50MB")),
+                logfile_backups: Some(10),
+                loglevel: Some(LogLevel::Info),
+                pidfile: Some(PathBuf::from("$CWD/taskmasterd.pid")),
+                umask: Some(String::from("0022")),
+                nodaemon: Some(false),
+                silent: Some(false),
+                minfds: Some(1024),
+                minprocs: Some(200),
+                nocleanup: Some(false),
+                childlogdir: Some(PathBuf::from("%(here)s")),
+                user: Some(String::from("antoine")),
+                directory: Some(PathBuf::from("%(here)s")),
+                strip_ansi: Some(false),
+                environment: Some({
+                    let mut e: HashMap<String, String> = HashMap::new();
+                    e.insert(String::from("USER"), String::from("abarthel"));
+                    e.insert(String::from("MAIL"), String::from("abarthel@student.42.fr"));
+                    e
+                }),
+                identifier: Some(String::from("taskmaster")),
             }),
-            taskmasterctl: None,
-            unix_http_server: None,
+            taskmasterctl: Some(Taskmasterctl {
+                serverurl: Some(String::from("http://localhost:9001")),
+                username: Some(String::new()),
+                password: Some(String::new()),
+                prompt: Some(String::from("taskmaster")),
+                history_file: Some(PathBuf::new()),
+            }),
+            unix_http_server: Some(UnixHttpServer {
+                file: Some(String::from("%(here)s")),
+                chmod: Some(String::from("0700")),
+                chown: Some(String::from("antoine:wheel")),
+                username: Some(String::from("antoine")),
+                password: Some(String::from("{SHA}82ab876d1387bfafe46cc1c8a2ef074eae50cb1")),
+            }),
             inet_http_server: Some(InetHttpServer {
                 port: String::from("127.0.0.1:9001"),
-                username: None,
-                password: None,
+                username: Some(String::from("antoine")),
+                password: Some(String::from("thepassword")),
             }),
             include: Some(Include {
                 files: vec![
@@ -1700,14 +1635,14 @@ mod tests {
                     String::from("my_second_group"),
                     Group {
                         programs: String::from("apache"),
-                        priority: None,
+                        priority: Some(999),
                     },
                 );
                 x.insert(
                     String::from("my_first_group"),
                     Group {
                         programs: String::from("nginx, vogsphere"),
-                        priority: None,
+                        priority: Some(999),
                     },
                 );
                 x
@@ -1718,44 +1653,50 @@ mod tests {
                         (
                             String::from("apache2"),
                             FcgiProgram {
-                                socket: String::from(
-                                    "unix:///var/run/supervisor/%(program_name)s.sock",
-                                ),
-                                socket_backlog: None,
-                                socket_owner: None,
-                                socket_mode: None,
+                                socket: String::new(),
+                                socket_backlog: Some(String::from("socket.SOMAXCONN")),
+                                socket_owner: Some(String::from("antoine:wheel")),
+                                socket_mode: Some(String::from("0700")),
                                 command: String::from("/bin/apachectl -k start"),
-                                process_name: None,
-                                numprocs: None,
-                                numprocs_start: None,
-                                priority: None,
-                                autostart: None,
-                                startsecs: None,
-                                startretries: None,
-                                autorestart: None,
-                                exitcodes: None,
-                                stopsignal: None,
-                                stopwaitsecs: None,
-                                stopasgroup: None,
-                                killasgroup: None,
-                                user: None,
-                                redirect_stderr: None,
-                                stdout_logfile: None,
-                                stdout_logfile_maxbytes: None,
-                                stdout_logfile_backups: None,
-                                stdout_capture_maxbytes: None,
-                                stdout_events_enabled: None,
-                                stdout_syslog: None,
-                                stderr_logfile: None,
-                                stderr_logfile_maxbytes: None,
-                                stderr_logfile_backups: None,
-                                stderr_capture_maxbytes: None,
-                                stderr_events_enabled: None,
-                                stderr_syslog: None,
-                                environment: None,
-                                directory: None,
-                                umask: None,
-                                serverurl: None,
+                                process_name: Some(String::from("%(program_name)s")),
+                                numprocs: Some(1),
+                                numprocs_start: Some(0),
+                                priority: Some(999),
+                                autostart: Some(true),
+                                startsecs: Some(1),
+                                startretries: Some(3),
+                                autorestart: Some(Restart::Unexpected),
+                                exitcodes: Some(vec![0]),
+                                stopsignal: Some(vec!["TERM".to_string(), "STOP".to_string()]),
+                                stopwaitsecs: Some(10),
+                                stopasgroup: Some(false),
+                                killasgroup: Some(false),
+                                user: Some(String::from("antoine")),
+                                redirect_stderr: Some(false),
+                                stdout_logfile: Some(PathBuf::from("AUTO")),
+                                stdout_logfile_maxbytes: Some(String::from("50MB")),
+                                stdout_logfile_backups: Some(10),
+                                stdout_capture_maxbytes: Some(0),
+                                stdout_events_enabled: Some(false),
+                                stdout_syslog: Some(false),
+                                stderr_logfile: Some(PathBuf::from("AUTO")),
+                                stderr_logfile_maxbytes: Some(String::from("50MB")),
+                                stderr_logfile_backups: Some(10),
+                                stderr_capture_maxbytes: Some(0),
+                                stderr_events_enabled: Some(false),
+                                stderr_syslog: Some(false),
+                                environment: Some({
+                                    let mut e: HashMap<String, String> = HashMap::new();
+                                    e.insert(String::from("USER"), String::from("abarthel"));
+                                    e.insert(
+                                        String::from("MAIL"),
+                                        String::from("abarthel@student.42.fr"),
+                                    );
+                                    e
+                                }),
+                                directory: Some(PathBuf::from("/home/antoine/")),
+                                umask: Some(String::from("0022")),
+                                serverurl: Some(String::from("AUTO")),
                             },
                         )
                     })
@@ -1767,48 +1708,70 @@ mod tests {
                         (
                             String::from("sleep"),
                             EventListener {
-                                buffer_size: None,
-                                events: None,
-                                result_handler: None,
+                                buffer_size: Some(10),
+                                events: Some(String::from("PROCESS_STATE")),
+                                result_handler: Some(String::new()),
                                 command: String::from("sleep 60"),
-                                process_name: None,
-                                numprocs: None,
-                                numprocs_start: None,
-                                priority: None,
-                                autostart: None,
-                                startsecs: None,
-                                startretries: None,
-                                autorestart: None,
-                                exitcodes: None,
-                                stopsignal: None,
-                                stopwaitsecs: None,
-                                stopasgroup: None,
-                                killasgroup: None,
-                                user: None,
-                                redirect_stderr: None,
-                                stdout_logfile: None,
-                                stdout_logfile_maxbytes: None,
-                                stdout_logfile_backups: None,
-                                stdout_capture_maxbytes: None,
-                                stdout_events_enabled: None,
-                                stdout_syslog: None,
-                                stderr_logfile: None,
-                                stderr_logfile_maxbytes: None,
-                                stderr_logfile_backups: None,
-                                stderr_capture_maxbytes: None,
-                                stderr_events_enabled: None,
-                                stderr_syslog: None,
-                                environment: None,
-                                directory: None,
-                                umask: None,
-                                serverurl: None,
+                                process_name: Some(String::from("%(program_name)s")),
+                                numprocs: Some(1),
+                                numprocs_start: Some(0),
+                                priority: Some(999),
+                                autostart: Some(true),
+                                startsecs: Some(1),
+                                startretries: Some(3),
+                                autorestart: Some(Restart::Unexpected),
+                                exitcodes: Some(vec![0]),
+                                stopsignal: Some(vec!["TERM".to_string(), "STOP".to_string()]),
+                                stopwaitsecs: Some(10),
+                                stopasgroup: Some(false),
+                                killasgroup: Some(false),
+                                user: Some(String::from("antoine")),
+                                redirect_stderr: Some(false),
+                                stdout_logfile: Some(PathBuf::from("AUTO")),
+                                stdout_logfile_maxbytes: Some(String::from("50MB")),
+                                stdout_logfile_backups: Some(10),
+                                stdout_capture_maxbytes: Some(0),
+                                stdout_events_enabled: Some(false),
+                                stdout_syslog: Some(false),
+                                stderr_logfile: Some(PathBuf::from("AUTO")),
+                                stderr_logfile_maxbytes: Some(String::from("50MB")),
+                                stderr_logfile_backups: Some(10),
+                                stderr_capture_maxbytes: Some(0),
+                                stderr_events_enabled: Some(false),
+                                stderr_syslog: Some(false),
+                                environment: Some({
+                                    let mut e: HashMap<String, String> = HashMap::new();
+                                    e.insert(String::from("USER"), String::from("abarthel"));
+                                    e.insert(
+                                        String::from("MAIL"),
+                                        String::from("abarthel@student.42.fr"),
+                                    );
+                                    e
+                                }),
+                                directory: Some(PathBuf::from("/home/antoine/")),
+                                umask: Some(String::from("0022")),
+                                serverurl: Some(String::from("AUTO")),
                             },
                         )
                     })
                     .collect(),
             ),
-            rpcinterface: None,
+            rpcinterface: Some(
+                (0..1)
+                    .map(|_| {
+                        (
+                            String::from("another"),
+                            RpcInterface {
+                                rpcinterface_factory: Some(String::from(
+                                    "my.package:make_another_rpcinterface",
+                                )),
+                                retries: Some(1),
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
         };
-        assert_eq!(deser, min_fields);
+        assert_eq!(deser, all);
     }
 }

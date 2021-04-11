@@ -29,6 +29,3 @@ eventlistener:
 
 inet_http_server:
   port: "127.0.0.1:9001"
-
-taskmasterd:
-  childlogdir: "/tmp/taskmasterd/"
