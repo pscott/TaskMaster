@@ -39,7 +39,7 @@ enum Restart {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    programs: Option<HashMap<String, Program>>,
+    programs: HashMap<String, Program>,
     taskmasterd: Option<Taskmasterd>,
     taskmasterctl: Option<Taskmasterctl>,
     unix_http_server: Option<UnixHttpServer>,
@@ -583,7 +583,7 @@ pub struct Include {
     /// Recursive includes from included files are not supported.
     /// Default: No default (required)
     /// Required: Yes
-    files: Vec<String>,
+    files: Vec<PathBuf>,
 }
 
 /// http://supervisord.org/configuration.html#group-x-section-settings
@@ -1161,12 +1161,13 @@ mod config {
     /// It contains path to taskmasterd configuration files.
     /// Path can be customized including `include` section.
     const LOOKAT: [&'static str; 6] = [
+        "./config_files/all_min_fields.yaml",
         "../etc/taskmasterd.yaml",
         "../taskmasterd.yaml",
         "./taskmasterd.yaml",
         "./etc/taskmasterd.yaml",
         "/etc/taskmasterdd.yaml",
-        "/etc/taskmaster/taskmasterd.conf",
+        //"/etc/taskmaster/taskmasterd.conf",
     ];
 
     /// Returns the first found configuration file following order in LOOKAT
@@ -1197,12 +1198,13 @@ impl Config {
 mod tests {
     use super::*;
 
+    /// This test the very minimal case with one program and one command field.
     #[test]
     fn minimal_one_program() {
         let filename = Some(String::from("./config_files/one_program.yaml"));
         let deser = Config::parse(filename).unwrap();
         let one_program = Config {
-            programs: Some({
+            programs: {
                 (0..1)
                     .map(|_| {
                         (
@@ -1244,7 +1246,7 @@ mod tests {
                         )
                     })
                     .collect()
-            }),
+            },
             taskmasterd: None,
             taskmasterctl: None,
             unix_http_server: None,
@@ -1256,5 +1258,292 @@ mod tests {
             rpcinterface: None,
         };
         assert_eq!(deser, one_program);
+    }
+
+    /// This tests that parsing fails when the program section with command field is missing.
+    #[test]
+    #[should_panic]
+    fn fail_meet_minimal_program_fields() {
+        let filename = Some(String::from("./config_files/empty.yaml"));
+        let _deser = Config::parse(filename).unwrap();
+    }
+
+    /// This tests all minimal field requirement from the different sections.
+    #[test]
+    fn minimal_multiple_section_fields() {
+        let filename = Some(String::from("./config_files/all_min_fields.yaml"));
+        let deser = Config::parse(filename).unwrap();
+        let min_fields = Config {
+            programs: {
+                (0..3)
+                    .map( |_| {
+                        (
+                            String::from("vogsphere"),
+                            Program {
+                                command: String::from(
+                                    "/usr/local/bin/vogsphere-worker --no-prefork",
+                                ),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        ),
+                        (
+                            String::from("nginx"),
+                            Program {
+                                command: String::from(
+                                    "/usr/local/bin/nginx -c /etc/nginx/test.conf",
+                                ),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        ),
+                        (
+                            String::from("apache"),
+                            Program {
+                                command: String::from("/bin/apached"),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        )
+                        }).collect()
+            },
+            taskmasterd: Some(Taskmasterd {
+                logfile: None,
+                logfile_maxbytes: None,
+                logfile_backups: None,
+                loglevel: None,
+                pidfile: None,
+                umask: None,
+                nodaemon: None,
+                silent: None,
+                minfds: None,
+                minprocs: None,
+                nocleanup: None,
+                childlogdir: PathBuf::from("/tmp/taskmasterd/"),
+                user: None,
+                directory: None,
+                strip_ansi: None,
+                environment: None,
+                identifier: None,
+            }),
+            taskmasterctl: None,
+            unix_http_server: None,
+            inet_http_server: Some(InetHttpServer {
+                port: String::from("127.0.0.1:9001"),
+                username: None,
+                password: None,
+            }),
+            include: Some(Include {
+                files: vec![
+                    PathBuf::from("/etc/taskmasterd.conf"),
+                    PathBuf::from("./taskmasterd.conf"),
+                    PathBuf::from("./config_files/taskmasterd.conf"),
+                ],
+            }),
+            group: Some(
+                (0..2)
+                    .map(|_| {
+                        (
+                            String::from("my_second_group"),
+                            Group {
+                                programs: String::from("apache"),
+                                priority: None,
+                            },
+                        ),
+                        (
+                            String::from("my_first_group"),
+                            Group {
+                                programs: String::from("nginx, vogsphere"),
+                                priority: None,
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
+            fcgi_program: Some(
+                (0..1)
+                    .map(|_| {
+                        (
+                            String::from("apache2"),
+                            FcgiProgram {
+                                socket: String::from(
+                                    "unix:///var/run/supervisor/%(program_name)s.sock",
+                                ),
+                                socket_backlog: None,
+                                socket_owner: None,
+                                socket_mode: None,
+                                command: String::from("/bin/apachectl -k start"),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
+            eventlistener: Some(
+                (0..1)
+                    .map(|_| {
+                        (
+                            String::from("sleep"),
+                            EventListener {
+                                buffer_size: None,
+                                events: None,
+                                result_handler: None,
+                                command: String::from("sleep 60"),
+                                process_name: None,
+                                numprocs: None,
+                                numprocs_start: None,
+                                priority: None,
+                                autostart: None,
+                                startsecs: None,
+                                startretries: None,
+                                autorestart: None,
+                                exitcodes: None,
+                                stopsignal: None,
+                                stopwaitsecs: None,
+                                stopasgroup: None,
+                                killasgroup: None,
+                                user: None,
+                                redirect_stderr: None,
+                                stdout_logfile: None,
+                                stdout_logfile_maxbytes: None,
+                                stdout_logfile_backups: None,
+                                stdout_capture_maxbytes: None,
+                                stdout_events_enabled: None,
+                                stdout_syslog: None,
+                                stderr_logfile: None,
+                                stderr_logfile_maxbytes: None,
+                                stderr_logfile_backups: None,
+                                stderr_capture_maxbytes: None,
+                                stderr_events_enabled: None,
+                                stderr_syslog: None,
+                                environment: None,
+                                directory: None,
+                                umask: None,
+                                serverurl: None,
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
+            rpcinterface: None,
+        };
+        assert_eq!(deser, min_fields);
     }
 }
