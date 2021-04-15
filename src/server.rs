@@ -2,12 +2,12 @@ use crate::{command::Command, config::Config, threadpool::ThreadPool, DEFAULT_AD
 use daemonize::Daemonize;
 use std::{
     env,
+    ffi::OsStr,
     fs::File,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
     process,
-    ffi::OsStr,
 };
 use users::{get_current_gid, get_current_uid};
 
@@ -45,7 +45,6 @@ pub fn run() -> Result<(), String> {
     });
     #[cfg(debug_assertions)]
     println! {"{:#?}", conf};
-
 
     let listener = TcpListener::bind(DEFAULT_ADDR).map_err(|e| format!("{:?}", e))?;
 
