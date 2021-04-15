@@ -19,6 +19,11 @@ const NUM_THREADS: usize = 4;
 /// # Errors
 ///
 /// Errors if it parsing the config file errors, or if binding to the default address fails.
+///
+/// # Panics
+///
+/// Panics if failed to get program name.
+///
 pub fn run() -> Result<(), String> {
     let dir = env::var_os("HOME")
         .map(PathBuf::from)
@@ -82,7 +87,7 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
 }
 
 /// Daemonize the current program.
-fn daemonize(home: &PathBuf) -> Result<(), String> {
+fn daemonize(home: &Path) -> Result<(), String> {
     let stderr = File::create(home.join("taskmasterd.log")).map_err(|e| format!("{:?}", e))?;
 
     let daemonize = Daemonize::new()

@@ -1,7 +1,7 @@
 //! # Config
 //!
 //! Library parsing the taskmasterd and taskmasterctl configuration files.
-//! Ref http://supervisord.org/configuration.html#unix-http-server-section-settings
+//! Ref <http://supervisord.org/configuration.html#unix-http-server-section-settings>
 //! Documentation is an almost copy-paste of the supervisor official documentation.
 //! Thanks to them!
 //!
@@ -11,12 +11,12 @@
 //!
 //! Environment Variables
 //! Environment variables that are present in the environment at the time that supervisord
-//! is started can be used in the configuration file using the Python string expression syntax %(ENV_X)s:
+//! is started can be used in the configuration file using the Python string expression syntax %(`ENV_X`)s:
 //!
 //![program:example]
-//!command=/usr/bin/example --loglevel=%(ENV_LOGLEVEL)s
+//!command=/usr/bin/example `--loglevel=%(ENV_LOGLEVEL)`s
 //!
-//!In the example above, the expression %(ENV_LOGLEVEL)s would be expanded to the value of the environment variable LOGLEVEL.
+//!In the example above, the expression %(`ENV_LOGLEVEL`)s would be expanded to the value of the environment variable LOGLEVEL.
 //!
 use serde::{Deserialize, Serialize};
 use std::{
@@ -61,7 +61,7 @@ pub struct Config {
 /// are created as a result of this configuration.
 /// It is an error to create a program section that does not have a name.
 /// The name must not include a colon character or a bracket character.
-/// The value of the name is used as the value for the %(program_name)s string
+/// The value of the name is used as the value for the %(`program_name`)s string
 /// expression expansion within other values where specified.
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -495,10 +495,10 @@ pub struct Taskmasterctl {
     history_file: Option<PathBuf>,
 }
 
-/// The taskmasterd.conf file contains a section named [unix_http_server]
+/// The taskmasterd.conf file contains a section named [`unix_http_server`]
 /// under which configuration parameters for an HTTP server that listens
 /// on a UNIX domain socket should be inserted.
-/// If the configuration file has no [unix_http_server] section,
+/// If the configuration file has no [`unix_http_server`] section,
 /// a UNIX domain socket HTTP server will not be started.
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -534,10 +534,10 @@ pub struct UnixHttpServer {
     password: Option<String>,
 }
 
-/// The taskmasterd.conf file contains a section named [inet_http_server]
+/// The taskmasterd.conf file contains a section named [`inet_http_server`]
 /// under which configuration parameters for an HTTP server that listens
 /// on a TCP (internet) socket should be inserted.
-/// If the configuration file has no [inet_http_server] section,
+/// If the configuration file has no [`inet_http_server`] section,
 /// an inet HTTP server will not be started.
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -586,7 +586,7 @@ pub struct Include {
     files: Vec<PathBuf>,
 }
 
-/// http://supervisord.org/configuration.html#group-x-section-settings
+/// <http://supervisord.org/configuration.html#group-x-section-settings>
 /// To place programs into a group so you can treat them as a unit, define a [group:x] section in your configuration file.
 /// The group header value is a composite.
 /// It is the word “group”, followed directly by a colon, then the group name.
@@ -608,8 +608,8 @@ pub struct Group {
     priority: Option<i32>,
 }
 
-/// http://supervisord.org/configuration.html#fcgi-program-x-section-settings
-/// Taskamaster can manage groups of FastCGI processes that all listen on the same socket.
+/// <http://supervisord.org/configuration.html#fcgi-program-x-section-settings>
+/// Taskamaster can manage groups of `FastCGI` processes that all listen on the same socket.
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct FcgiProgram {
@@ -877,7 +877,7 @@ pub struct FcgiProgram {
 /// within the configuration file.
 /// These pools contain processes that are meant to receive and respond to event notifications
 /// from taskmaster’s event system.
-/// http://supervisord.org/events.html#event-types
+/// <http://supervisord.org/events.html#event-types>
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct EventListener {
@@ -1154,41 +1154,45 @@ pub struct RpcInterface {
 }
 
 /// File order it will look at, and pick the first it found.
-mod config {
-    use super::*;
+mod config_file {
+    use super::{Error, Path};
 
-    /// LOOKAT is Default values of Include::files
+    /// LOOKAT is Default values of `Include::files`
     /// It contains path to taskmasterd configuration files.
     /// Path can be customized including `include` section.
-    const LOOKAT: [&'static str; 6] = [
-        "./config_files/all_min_fields.yaml",
+    const LOOKAT: [&str; 6] = [
         "../etc/taskmasterd.yaml",
         "../taskmasterd.yaml",
         "./taskmasterd.yaml",
         "./etc/taskmasterd.yaml",
         "/etc/taskmasterdd.yaml",
-        //"/etc/taskmaster/taskmasterd.conf",
+        "/etc/taskmaster/taskmasterd.conf",
     ];
 
     /// Returns the first found configuration file following order in LOOKAT
     /// of include if specified.
+    /// # Errors
+    /// Error happens when configuration file path could not established.
     pub fn find_file() -> Result<&'static &'static str, Box<dyn Error>> {
         match LOOKAT.iter().find(|path| Path::new(path).exists()) {
-            Some(p) => return Ok(p),
-            None => return Err("Could not find any configuration file.".into()),
-        };
+            Some(p) => Ok(p),
+            None => Err("Could not find any configuration file.".into()),
+        }
     }
 }
 
 impl Config {
+    /// # Errors
+    /// The parse function may fail if the yaml configuration file is not well formatted or unknown
+    /// field is added or if a mandatory field is missing.
     pub fn parse(filename: Option<String>) -> Result<Config, Box<dyn Error>> {
-        let file = match filename {
-            Some(f) => File::open(&f)?,
-            None => {
-                let valid_path_to_conf = config::find_file()?;
-                File::open(&valid_path_to_conf)?
-            }
+        let file = if let Some(f) = filename {
+            File::open(&f)?
+        } else {
+            let valid_path_to_conf = config_file::find_file()?;
+            File::open(&valid_path_to_conf)?
         };
+
         let deserialized_conf: Config = serde_yaml::from_reader(file)?;
         Ok(deserialized_conf)
     }
@@ -1273,6 +1277,7 @@ mod tests {
     fn minimal_multiple_section_fields() {
         let filename = Some(String::from("./config_files/all_min_fields.yaml"));
         let deser = Config::parse(filename).unwrap();
+        #[allow(clippy::all)]
         let min_fields = Config {
             programs: {
                 let mut x: HashMap<String, Program> = HashMap::new();
@@ -1524,6 +1529,7 @@ mod tests {
 
     /// This tests all fields from all sections.
     #[test]
+    #[allow(clippy::all)]
     fn full_fileds_in_sections() {
         let filename = Some(String::from("./config_files/full_fields_n_sections.yaml"));
         let deser = Config::parse(filename).unwrap();
