@@ -1,0 +1,181 @@
+unix_http_server:
+  file: "%(here)s"
+  chmod: "0700"
+  chown: "antoine:wheel"
+  username: "antoine"
+  password: "{SHA}82ab876d1387bfafe46cc1c8a2ef074eae50cb1"
+
+inet_http_server:
+  port: "127.0.0.1:9001"
+  username: "antoine"
+  password: "thepassword"
+
+include:
+  files:
+    - "/etc/taskmasterd.conf"
+    - "./taskmasterd.conf"
+    - "./config_files/taskmasterd.conf"
+
+taskmasterd:
+  logfile: "$CWD/taskmasterd.log"
+  logfile_maxbytes: "50MB"
+  logfile_backups: 10
+  loglevel: 'info'
+  pidfile: "$CWD/taskmasterd.pid"
+  umask: "0022"
+  nodaemon: false
+  silent: false
+  minfds: 1024
+  minprocs: 200
+  nocleanup: false
+  childlogdir: "%(here)s"
+  user: "antoine"
+  directory: "%(here)s"
+  strip_ansi: false
+  identifier: "taskmaster"
+  environment:
+    "USER": "abarthel"
+
+taskmasterctl:
+  serverurl: "http://localhost:9001"
+  username: ""
+  password: ""
+  prompt: "taskmaster"
+  history_file: ""
+
+programs:
+  samba:
+    command: "/usr/sbin/smbd -F"
+    process_name: "%(program_name)s"
+    numprocs: 1
+    numprocs_start: 0
+    priority: 999
+    autostart: true
+    startsecs: 1
+    startretries: 3
+    autorestart: 'unexpected'
+    exitcodes:
+      - 0
+    stopsignal:
+      - 'TERM'
+      - 'STOP'
+    stopwaitsecs: 10
+    stopasgroup: false
+    killasgroup: false
+    user: 'antoine'
+    redirect_stderr: false
+    stdout_logfile: 'AUTO'
+    stdout_logfile_maxbytes: "50MB"
+    stdout_logfile_backups: 10
+    stdout_capture_maxbytes: 0
+    stdout_events_enabled: false
+    stdout_syslog: false
+    stderr_logfile: 'AUTO'
+    stderr_logfile_maxbytes: "50MB"
+    stderr_logfile_backups: 10
+    stderr_capture_maxbytes: 0
+    stderr_events_enabled: false
+    stderr_syslog: false
+    directory: "/home/antoine"
+    umask: "0022"
+    serverurl: 'AUTO'
+    environment:
+      "USER": "abarthel"
+
+group:
+  my_first_group:
+    programs: "nginx, vogsphere"
+    priority: 999
+  my_second_group:
+    programs: "apache"
+    priority: 999
+
+fcgi_program:
+  apache2:
+    socket: ""
+    socket_backlog: "socket.SOMAXCONN"
+    socket_owner: "antoine:wheel"
+    socket_mode: "0700"
+    command: "/bin/apachectl -k start"
+    process_name: "%(program_name)s"
+    numprocs: 1
+    numprocs_start: 0
+    priority: 999
+    autostart: true
+    startsecs: 1
+    startretries: 3
+    autorestart: 'unexpected'
+    exitcodes:
+      - 0
+    stopsignal:
+      - 'TERM'
+      - 'STOP'
+    stopwaitsecs: 10
+    stopasgroup: false
+    killasgroup: false
+    user: 'antoine'
+    redirect_stderr: false
+    stdout_logfile: 'AUTO'
+    stdout_logfile_maxbytes: "50MB"
+    stdout_logfile_backups: 10
+    stdout_capture_maxbytes: 0
+    stdout_events_enabled: false
+    stdout_syslog: false
+    stderr_logfile: 'AUTO'
+    stderr_logfile_maxbytes: "50MB"
+    stderr_logfile_backups: 10
+    stderr_capture_maxbytes: 0
+    stderr_events_enabled: false
+    stderr_syslog: false
+    directory: "/home/antoine"
+    umask: "0022"
+    serverurl: 'AUTO'
+    environment:
+      "USER": "abarthel"
+
+eventlistener:
+  sleep:
+    buffer_size: 10
+    events: "PROCESS_STATE"
+    result_handler: ""
+    command: "sleep 60"
+    process_name: "%(program_name)s"
+    numprocs: 1
+    numprocs_start: 0
+    priority: 999
+    autostart: true
+    startsecs: 1
+    startretries: 3
+    autorestart: 'unexpected'
+    exitcodes:
+      - 0
+    stopsignal:
+      - 'TERM'
+      - 'STOP'
+    stopwaitsecs: 10
+    stopasgroup: false
+    killasgroup: false
+    user: 'antoine'
+    redirect_stderr: false
+    stdout_logfile: 'AUTO'
+    stdout_logfile_maxbytes: "50MB"
+    stdout_logfile_backups: 10
+    stdout_capture_maxbytes: 0
+    stdout_events_enabled: false
+    stdout_syslog: false
+    stderr_logfile: 'AUTO'
+    stderr_logfile_maxbytes: "50MB"
+    stderr_logfile_backups: 10
+    stderr_capture_maxbytes: 0
+    stderr_events_enabled: false
+    stderr_syslog: false
+    directory: "/home/antoine"
+    umask: "0022"
+    serverurl: 'AUTO'
+    environment:
+      "USER": "abarthel"
+
+rpcinterface:
+  another:
+    rpcinterface_factory: "my.package:make_another_rpcinterface"
+    retries: 1

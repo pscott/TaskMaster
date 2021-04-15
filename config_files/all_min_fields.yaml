@@ -1,0 +1,31 @@
+programs:
+        nginx:
+                command: "/usr/local/bin/nginx -c /etc/nginx/test.conf"
+        vogsphere:
+                command: "/usr/local/bin/vogsphere-worker --no-prefork"
+        apache:
+                command: "/bin/apached"
+
+include:
+  files:
+    - "/etc/taskmasterd.conf"
+    - "./taskmasterd.conf"
+    - "./config_files/taskmasterd.conf"
+
+group:
+  my_first_group:
+    programs: "nginx, vogsphere"
+  my_second_group:
+    programs: "apache"
+
+fcgi_program:
+  apache2:
+    socket: "unix:///var/run/supervisor/%(program_name)s.sock"
+    command: "/bin/apachectl -k start"
+
+eventlistener:
+  sleep:
+    command: "sleep 60"
+
+inet_http_server:
+  port: "127.0.0.1:9001"

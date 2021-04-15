@@ -1,12 +1,13 @@
 use crate::{command::Command, config::Config, threadpool::ThreadPool, DEFAULT_ADDR};
 use daemonize::Daemonize;
 use std::{
-    convert::TryFrom,
     env,
+    ffi::OsStr,
     fs::File,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
+    process,
 };
 use users::{get_current_gid, get_current_uid};
 
@@ -18,6 +19,11 @@ const NUM_THREADS: usize = 4;
 /// # Errors
 ///
 /// Errors if it parsing the config file errors, or if binding to the default address fails.
+///
+/// # Panics
+///
+/// Panics if failed to get program name.
+///
 pub fn run() -> Result<(), String> {
     let dir = env::var_os("HOME")
         .map(PathBuf::from)
@@ -27,8 +33,23 @@ pub fn run() -> Result<(), String> {
 
     let pool = ThreadPool::new(NUM_THREADS)?;
 
-    let path = Path::new("config.yaml");
-    let _config = Config::try_from(path).map_err(|e| format!("{:?}", e))?;
+    let conf = Config::parse(None).unwrap_or_else(|err| {
+        eprintln!(
+            "{}: {}",
+            env::args()
+                .next()
+                .as_ref()
+                .map(Path::new)
+                .and_then(Path::file_name)
+                .and_then(OsStr::to_str)
+                .map(String::from)
+                .unwrap(),
+            err
+        );
+        process::exit(1);
+    });
+    #[cfg(debug_assertions)]
+    println! {"{:#?}", conf};
 
     let listener = TcpListener::bind(DEFAULT_ADDR).map_err(|e| format!("{:?}", e))?;
 
@@ -66,7 +87,7 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), String> {
 }
 
 /// Daemonize the current program.
-fn daemonize(home: &PathBuf) -> Result<(), String> {
+fn daemonize(home: &Path) -> Result<(), String> {
     let stderr = File::create(home.join("taskmasterd.log")).map_err(|e| format!("{:?}", e))?;
 
     let daemonize = Daemonize::new()

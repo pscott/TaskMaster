@@ -8,8 +8,8 @@ pub enum Command {
     Clear(Vec<String>),
     /// Exit taskmasterctl.
     Exit,
-    /// Get the PID of one or multiple child processes.
-    PID(Vec<String>),
+    /// Get the `PID` of one or multiple child processes.
+    Pid(Vec<String>),
     /// Removes process/group from active config.
     Remove(Vec<String>),
     /// Reload the daemon’s configuration files, without add/remove (no restarts).
@@ -95,7 +95,7 @@ impl<'a> std::convert::TryFrom<&[&str]> for Command {
                 "add" => create_command!(args, Add, multiple_args),
                 "clear" => create_command!(args, Clear, multiple_args),
                 "exit" => create_command!(args, Exit, zero_args),
-                "pid" => create_command!(args, PID, unspecified),
+                "pid" => create_command!(args, Pid, unspecified),
                 "remove" => create_command!(args, Remove, multiple_args),
                 "reread" => create_command!(args, ReRead, zero_args),
                 "restart" => create_command!(args, Restart, multiple_args),

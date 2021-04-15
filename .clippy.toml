@@ -1,0 +1,2 @@
+blacklisted-names = ["config"]
+too-many-lines-threshold = 300

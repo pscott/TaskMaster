@@ -1,0 +1,38 @@
+programs:
+        nginx:
+                command: "/usr/local/bin/nginx -c /etc/nginx/test.conf"
+                numprocs: 1
+                umask: 022
+                directory: /tmp
+                autostart: true
+                autorestart: unexpected
+                exitcodes:
+                        - 0
+                        - 2
+                startretries: 3
+                startsecs: 5
+                stopsignal:
+                        - SIGTERM
+                stopwaitsecs: 10
+                stdout_logfile: /tmp/nginx.stdout
+                stderr_logfile: /tmp/nginx.stderr
+                environment:
+                        STARTED_BY: taskmaster
+                        ANSWER: 42
+        vogsphere:
+                command: "/usr/local/bin/vogsphere-worker --no-prefork"
+                numprocs: 8
+                umask: 077
+                directory: /tmp
+                autostart: true
+                autorestart: unexpected
+                exitcodes:
+                        - 0
+                startretries: 3
+                startsecs: 5
+                stopsignal:
+                        - SIGUSR1
+                stopwaitsecs: 10
+                stdout_logfile: /tmp/vgsworker.stdout
+                stderr_logfile: /tmp/vgsworker.stderr
+
