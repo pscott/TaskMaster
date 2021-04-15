@@ -17,7 +17,7 @@ include:
     - "./config_files/taskmasterd.conf"
 
 taskmasterd:
-  logfile: "$CWD/taskmasterd.pid"
+  logfile: "$CWD/taskmasterd.log"
   logfile_maxbytes: "50MB"
   logfile_backups: 10
   loglevel: 'info'
@@ -32,10 +32,9 @@ taskmasterd:
   user: "antoine"
   directory: "%(here)s"
   strip_ansi: false
-  environment:
-    - "USER": "abarthel"
-    - "MAIL": "abarthel@student.42.fr"
   identifier: "taskmaster"
+  environment:
+    "USER": "abarthel"
 
 taskmasterctl:
   serverurl: "http://localhost:9001"
@@ -55,7 +54,8 @@ programs:
     startsecs: 1
     startretries: 3
     autorestart: 'unexpected'
-    exitcodes: 0
+    exitcodes:
+      - 0
     stopsignal:
       - 'TERM'
       - 'STOP'
@@ -63,7 +63,7 @@ programs:
     stopasgroup: false
     killasgroup: false
     user: 'antoine'
-    redirect_stdout: false
+    redirect_stderr: false
     stdout_logfile: 'AUTO'
     stdout_logfile_maxbytes: "50MB"
     stdout_logfile_backups: 10
@@ -76,12 +76,11 @@ programs:
     stderr_capture_maxbytes: 0
     stderr_events_enabled: false
     stderr_syslog: false
+    directory: "/home/antoine"
+    umask: "0022"
+    serverurl: 'AUTO'
     environment:
-      - "USER": "abarthel"
-      - "MAIL": "abarthel@student.42.fr"
-        directory: "/home/antoine"
-        umask: "0022"
-        serverurl: 'AUTO'
+      "USER": "abarthel"
 
 group:
   my_first_group:
@@ -106,7 +105,8 @@ fcgi_program:
     startsecs: 1
     startretries: 3
     autorestart: 'unexpected'
-    exitcodes: 0
+    exitcodes:
+      - 0
     stopsignal:
       - 'TERM'
       - 'STOP'
@@ -114,7 +114,7 @@ fcgi_program:
     stopasgroup: false
     killasgroup: false
     user: 'antoine'
-    redirect_stdout: false
+    redirect_stderr: false
     stdout_logfile: 'AUTO'
     stdout_logfile_maxbytes: "50MB"
     stdout_logfile_backups: 10
@@ -127,12 +127,11 @@ fcgi_program:
     stderr_capture_maxbytes: 0
     stderr_events_enabled: false
     stderr_syslog: false
-    environment:
-      - "USER": "abarthel"
-      - "MAIL": "abarthel@student.42.fr"
     directory: "/home/antoine"
     umask: "0022"
     serverurl: 'AUTO'
+    environment:
+      "USER": "abarthel"
 
 eventlistener:
   sleep:
@@ -148,7 +147,8 @@ eventlistener:
     startsecs: 1
     startretries: 3
     autorestart: 'unexpected'
-    exitcodes: 0
+    exitcodes:
+      - 0
     stopsignal:
       - 'TERM'
       - 'STOP'
@@ -156,7 +156,7 @@ eventlistener:
     stopasgroup: false
     killasgroup: false
     user: 'antoine'
-    redirect_stdout: false
+    redirect_stderr: false
     stdout_logfile: 'AUTO'
     stdout_logfile_maxbytes: "50MB"
     stdout_logfile_backups: 10
@@ -169,12 +169,11 @@ eventlistener:
     stderr_capture_maxbytes: 0
     stderr_events_enabled: false
     stderr_syslog: false
-    environment:
-      - "USER": "abarthel"
-      - "MAIL": "abarthel@student.42.fr"
     directory: "/home/antoine"
     umask: "0022"
     serverurl: 'AUTO'
+    environment:
+      "USER": "abarthel"
 
 rpcinterface:
   another:

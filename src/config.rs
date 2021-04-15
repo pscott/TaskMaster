@@ -1565,10 +1565,6 @@ mod tests {
                                 environment: Some({
                                     let mut e: HashMap<String, String> = HashMap::new();
                                     e.insert(String::from("USER"), String::from("abarthel"));
-                                    e.insert(
-                                        String::from("MAIL"),
-                                        String::from("abarthel@student.42.fr"),
-                                    );
                                     e
                                 }),
                                 directory: Some(PathBuf::from("/home/antoine/")),
@@ -1598,7 +1594,6 @@ mod tests {
                 environment: Some({
                     let mut e: HashMap<String, String> = HashMap::new();
                     e.insert(String::from("USER"), String::from("abarthel"));
-                    e.insert(String::from("MAIL"), String::from("abarthel@student.42.fr"));
                     e
                 }),
                 identifier: Some(String::from("taskmaster")),
@@ -1688,10 +1683,6 @@ mod tests {
                                 environment: Some({
                                     let mut e: HashMap<String, String> = HashMap::new();
                                     e.insert(String::from("USER"), String::from("abarthel"));
-                                    e.insert(
-                                        String::from("MAIL"),
-                                        String::from("abarthel@student.42.fr"),
-                                    );
                                     e
                                 }),
                                 directory: Some(PathBuf::from("/home/antoine/")),
@@ -1742,10 +1733,6 @@ mod tests {
                                 environment: Some({
                                     let mut e: HashMap<String, String> = HashMap::new();
                                     e.insert(String::from("USER"), String::from("abarthel"));
-                                    e.insert(
-                                        String::from("MAIL"),
-                                        String::from("abarthel@student.42.fr"),
-                                    );
                                     e
                                 }),
                                 directory: Some(PathBuf::from("/home/antoine/")),
